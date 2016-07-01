@@ -20,20 +20,17 @@ TEST_BIN = $(TEST)/bin
 TEST_SRC = $(TEST)/src
 
 INC_FLGS = -I./$(INCLUDE) -I./$(SRC) -I./$(TP_INCLUDE)
-LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl -lrose
+LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl # -lrose
 
 CXX = g++
 COPTS = -ggdb --std=c++11
 CFLGS = $(COPTS) $(INC_FLGS) $(LIB_FLGS)
 
-# SHORT_TESTS = print_types
+SHORT_TESTS = isl_only
 
-# TESTS = $(addprefix $(TEST_BIN)/,$(SHORT_TESTS))
+TESTS = $(addprefix $(TEST_BIN)/,$(SHORT_TESTS))
 
-# $(SHORT_TESTS): % : $(TESTS)/%
-
-SHORT_OBJS = ISLWalker \
-						 TypeWalker
+SHORT_OBJS = PrintNodeWalker
 
 OBJS = $(addprefix $(BIN)/, $(addsuffix .o, $(SHORT_OBJS)))
 
@@ -43,8 +40,8 @@ all: $(INITED_FILE) $(OBJS)
 $(OBJS): $(BIN)/%.o : $(SRC)/%.cpp $(INCLUDE)/%.hpp $(INITED_FILE)
 	$(CXX) $(CFLGS) $(COPTS) $< -c -o $@
 
-$(TESTS): $(TEST_BIN)/% : $(TEST_SRC)/%.cpp
-	$(CXX) $(CFLGS) $(COPTS) $< -c -o $@
+$(SHORT_TESTS): % : $(TEST_SRC)/%.cpp $(OBJS)
+	$(CXX) $(CFLGS) $(COPTS) $(OBJS) $< -o $(TEST_BIN)/$@
 
 # Initialize the project and install third-party materials
 init: initialize
