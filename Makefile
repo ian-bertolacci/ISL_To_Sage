@@ -20,17 +20,19 @@ TEST_BIN = $(TEST)/bin
 TEST_SRC = $(TEST)/src
 
 INC_FLGS = -I./$(INCLUDE) -I./$(SRC) -I./$(TP_INCLUDE)
-LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl # -lrose
+LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl -lrose
 
 CXX = g++
 COPTS = -ggdb --std=c++11
 CFLGS = $(COPTS) $(INC_FLGS) $(LIB_FLGS)
 
-SHORT_TESTS = isl_only
+SHORT_TESTS = isl_only \
+							sage_test
 
 TESTS = $(addprefix $(TEST_BIN)/,$(SHORT_TESTS))
 
-SHORT_OBJS = PrintNodeWalker
+SHORT_OBJS = PrintNodeWalker \
+						 SageTransformationWalker
 
 OBJS = $(addprefix $(BIN)/, $(addsuffix .o, $(SHORT_OBJS)))
 
