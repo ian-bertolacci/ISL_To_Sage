@@ -44,3 +44,8 @@ third-party/initialized
 # Binaries
 bin/*
 tests/bin/*
+
+# Drops from test programs
+*.dot
+*.pdf
+*__template_file__*

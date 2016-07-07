@@ -84,8 +84,9 @@ void example( char** argv, vector<string> domains, vector<string> maps ){
 
     // Write out a template file.
     ofstream template_file;
-    //string template_code( "#include <iostream>\nusing namespace std;\nint main(){ {int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234))))))))))))))))))))))))))))))))))))))))))))))))))); cout << A << B << C << D << E << F << G << H << I << J << K << L << M << N << O << P << Q << R << S << T << U << V << W << X << Y << Z << a << b << c << d << e << f << g << h << i << j << k << l << m << n << o << p << q << r << s << t << u << v << w << x << y << z << endl; }{int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234))))))))))))))))))))))))))))))))))))))))))))))))))); cout << A << B << C << D << E << F << G << H << I << J << K << L << M << N << O << P << Q << R << S << T << U << V << W << X << Y << Z << a << b << c << d << e << f << g << h << i << j << k << l << m << n << o << p << q << r << s << t << u << v << w << x << y << z << endl; } }");
-    string template_code( "#include <iostream>\nusing namespace std;\nint main(){ }");
+    //string template_code( "#include <iostream>\nusing namespace std;\nint main(){ int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234))))))))))))))))))))))))))))))))))))))))))))))))))); cout << A << B << C << D << E << F << G << H << I << J << K << L << M << N << O << P << Q << R << S << T << U << V << W << X << Y << Z << a << b << c << d << e << f << g << h << i << j << k << l << m << n << o << p << q << r << s << t << u << v << w << x << y << z << endl; }{int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234))))))))))))))))))))))))))))))))))))))))))))))))))); cout << A << B << C << D << E << F << G << H << I << J << K << L << M << N << O << P << Q << R << S << T << U << V << W << X << Y << Z << a << b << c << d << e << f << g << h << i << j << k << l << m << n << o << p << q << r << s << t << u << v << w << x << y << z << endl; } }");
+    string template_code( "#include <iostream>\nusing namespace std;\nint main(){\n int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\n }");
+    //string template_code( "#include <iostream>\nusing namespace std;\nint main(){ }");
     std::string template_file_name( "__template_file__.cpp" );
 
     template_file.open( template_file_name.c_str(), ios::trunc | ios::out );
@@ -164,6 +165,21 @@ int main( int argc, char** argv){
     tests.push_back( make_pair( domains, maps) );
   }
   //*/
+
+  //*
+  {
+    vector<string> domains = {
+      string( "[N]->{S[i] : 1 <= i <= N}")
+    };
+
+    vector<string> maps = {
+      string( "{S[i] -> [0,i,0]}" )
+    };
+
+    tests.push_back( make_pair( domains, maps) );
+  }
+  //*/
+
   /*
   {
     vector<string> domains = {
@@ -179,7 +195,7 @@ int main( int argc, char** argv){
   }
   //*/
 
-  //*
+  /*
   {
     vector<string> domains = {
       string( "{S1[i] : 1 <= i <= 10}"),

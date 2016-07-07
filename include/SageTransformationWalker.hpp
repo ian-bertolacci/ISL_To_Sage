@@ -30,6 +30,9 @@ class SageTransformationWalker{
     SgExpression* visit_op_lhs( isl_ast_expr* node );
     SgExpression* visit_op_rhs( isl_ast_expr* node );
     SgExpression* visit_op_unary_operand( isl_ast_expr* node );
+    SgExpression* visit_op_cond_condition_operand( isl_ast_expr* node );
+    SgExpression* visit_op_cond_then_operand( isl_ast_expr* node );
+    SgExpression* visit_op_cond_else_operand( isl_ast_expr* node );
 
     // Visit operation node methods
     SgExpression* visit_op_error(isl_ast_expr* node);

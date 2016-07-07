@@ -244,6 +244,18 @@ SgExpression* SageTransformationWalker::visit_op_unary_operand( isl_ast_expr* no
   return visit_op_operand(node, 0);
 }
 
+SgExpression* SageTransformationWalker::visit_op_cond_condition_operand( isl_ast_expr* node ){
+  return visit_op_operand(node, 0);
+}
+
+SgExpression* SageTransformationWalker::visit_op_cond_then_operand( isl_ast_expr* node ){
+  return visit_op_operand(node, 1);
+}
+
+SgExpression* SageTransformationWalker::visit_op_cond_else_operand( isl_ast_expr* node ){
+  return visit_op_operand(node, 2);
+}
+
 
 SgExpression* SageTransformationWalker::visit_op_error(isl_ast_expr* node){
   return NULL;
@@ -257,7 +269,7 @@ SgExpression*  SageTransformationWalker::visit_op_and( isl_ast_expr* node ){
   SgExpression* rhs = this->visit_op_rhs( node );
 
   // Construct using templated buildBinaryExpression
-  SgExpression* exp = buildBinaryExpression<SgBitAndOp>( lhs, rhs );
+  SgExpression* exp = buildBinaryExpression<SgAndOp>( lhs, rhs );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "Operation and @ " << static_cast<void*>(exp) << endl;
@@ -291,7 +303,7 @@ SgExpression* SageTransformationWalker::visit_op_or(isl_ast_expr* node){
   SgExpression* rhs = this->visit_op_rhs( node );
 
   // Construct using templated buildBinaryExpression
-  SgExpression* exp = buildBinaryExpression<SgBitOrOp>( lhs, rhs );
+  SgExpression* exp = buildBinaryExpression<SgOrOp>( lhs, rhs );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "Operation or @ " << static_cast<void*>(exp) << endl;
@@ -318,18 +330,84 @@ SgExpression* SageTransformationWalker::visit_op_or_else(isl_ast_expr* node){
 }
 
 SgExpression* SageTransformationWalker::visit_op_max(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) >= 2 );
+
+  int last = isl_ast_expr_get_op_n_arg(node)-1;
+
+  SgName name( "max" );
+  SgScopeStatement* scope = new SgGlobal();
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
+  }
+
+  if( scope == NULL ){
+    cerr << "No scope." << endl;
+    abort();
+  }
+
+  vector<SgExpression*> parameter_expressions;
+  SgExpression* head = this->visit_op_operand( node, last );
+
+  for( int i = last-1; i >= 0; i -= 1 ){
+    parameter_expressions.clear();
+    parameter_expressions.push_back( head );
+    parameter_expressions.push_back( this->visit_op_operand(node, i) );
+
+    SgExprListExp* parameters = buildExprListExp( parameter_expressions );
+
+    head = buildFunctionCallExp( name, buildIntType(), parameters, scope );
+
+    if( this->verbose ){
+      cout << string(this->depth*2, ' ') << "max @ " << static_cast<void*>(head) << endl;
+    }
+  }
+
+  return head;
 }
 
 SgExpression* SageTransformationWalker::visit_op_min(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) >= 2 );
+
+  int last = isl_ast_expr_get_op_n_arg(node)-1;
+
+  SgName name( "max" );
+  SgScopeStatement* scope = new SgGlobal();
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
+  }
+
+  if( scope == NULL ){
+    cerr << "No scope." << endl;
+    abort();
+  }
+
+  vector<SgExpression*> parameter_expressions;
+  SgExpression* head = this->visit_op_operand( node, last );
+
+  for( int i = last-1; i >= 0; i -= 1 ){
+    parameter_expressions.clear();
+    parameter_expressions.push_back( head );
+    parameter_expressions.push_back( this->visit_op_operand(node, i) );
+
+    SgExprListExp* parameters = buildExprListExp( parameter_expressions );
+
+    head = buildFunctionCallExp( name, buildIntType(), parameters, scope );
+
+    if( this->verbose ){
+      cout << string(this->depth*2, ' ') << "min @ " << static_cast<void*>(head) << endl;
+    }
+  }
+
+  return head;
 }
 
 // Unary minus
 SgExpression* SageTransformationWalker::visit_op_minus(isl_ast_expr* node){
   assert( isl_ast_expr_get_op_n_arg(node) == 1 );
 
-  // Get children node
+  // Get child node
   SgExpression* arg = this->visit_op_unary_operand( node );
 
   // Construct using templated buildBinaryExpression
@@ -411,27 +489,119 @@ SgExpression* SageTransformationWalker::visit_op_div(isl_ast_expr* node){
 }
 
 SgExpression* SageTransformationWalker::visit_op_fdiv_q(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 2 );
+
+  // Get function name
+  SgName name( "floord" );
+
+  // Build parameters list
+  vector<SgExpression*> parameter_expressions;
+  parameter_expressions.push_back( this->visit_op_lhs( node ) );
+  parameter_expressions.push_back( this->visit_op_rhs( node ) );
+
+  SgExprListExp* parameters = buildExprListExp( parameter_expressions );
+
+  // Build call
+  SgScopeStatement* scope = new SgGlobal();
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
+  }
+
+  if( scope == NULL ){
+    cerr << "No scope." << endl;
+    abort();
+  }
+
+  SgExpression* call = buildFunctionCallExp( name, buildIntType(), parameters, scope );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "fdiv_q @ " << static_cast<void*>(call) << endl;
+  }
+
+  return call;
 }
 
 SgExpression* SageTransformationWalker::visit_op_pdiv_q(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 2 );
+
+  // Get children nodes
+  SgExpression* lhs = this->visit_op_lhs( node );
+  SgExpression* rhs = this->visit_op_rhs( node );
+
+  // Construct using templated buildBinaryExpression
+  SgExpression* exp = buildBinaryExpression<SgDivideOp>( lhs, rhs );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "Operation pdiv_q @ " << static_cast<void*>(exp) << endl;
+  }
+
+  return exp;
 }
 
 SgExpression* SageTransformationWalker::visit_op_pdiv_r(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 2 );
+
+  // Get children nodes
+  SgExpression* lhs = this->visit_op_lhs( node );
+  SgExpression* rhs = this->visit_op_rhs( node );
+
+  // Construct using templated buildBinaryExpression
+  SgExpression* exp = buildBinaryExpression<SgModOp>( lhs, rhs );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "Operation pdiv_r @ " << static_cast<void*>(exp) << endl;
+  }
+
+  return exp;
 }
 
 SgExpression* SageTransformationWalker::visit_op_zdiv_r(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 2 );
+
+  // Get children nodes
+  SgExpression* lhs = this->visit_op_lhs( node );
+  SgExpression* rhs = this->visit_op_rhs( node );
+
+  // Construct using templated buildBinaryExpression
+  SgExpression* exp = buildBinaryExpression<SgModOp>( lhs, rhs );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "Operation zdiv_r @ " << static_cast<void*>(exp) << endl;
+  }
+
+  return exp;
 }
 
 SgExpression* SageTransformationWalker::visit_op_cond(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 3 );
+
+  SgExpression* condition = this->visit_op_cond_condition_operand( node );
+  SgExpression* then_exp = this->visit_op_cond_then_operand( node );
+  SgExpression* else_exp = this->visit_op_cond_else_operand( node );
+
+  SgExpression* exp = buildConditionalExp( condition, then_exp, else_exp );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "Operation cond @ " << static_cast<void*>(exp) << endl;
+  }
+
+  return exp;
 }
 
 SgExpression* SageTransformationWalker::visit_op_select(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 3 );
+
+  SgExpression* condition = this->visit_op_cond_condition_operand( node );
+  SgExpression* then_exp = this->visit_op_cond_then_operand( node );
+  SgExpression* else_exp = this->visit_op_cond_else_operand( node );
+
+  SgExpression* exp = buildConditionalExp( condition, then_exp, else_exp );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "Operation select @ " << static_cast<void*>(exp) << endl;
+  }
+
+  return exp;
 }
 
 SgExpression* SageTransformationWalker::visit_op_eq(isl_ast_expr* node){
@@ -520,21 +690,17 @@ SgExpression* SageTransformationWalker::visit_op_gt(isl_ast_expr* node){
 }
 
 SgExprStatement* SageTransformationWalker::visit_op_call(isl_ast_expr* node){
+  assert( isl_ast_expr_get_op_n_arg(node) >= 1 );
   // Get function name
   SgName name( isl_id_get_name( isl_ast_expr_get_id( isl_ast_expr_get_op_arg( node, 0 ) ) ) );
 
   // Build parameters list
   vector<SgExpression*> parameter_expressions;
-  for( int i = 1; i < isl_ast_expr_get_op_n_arg(node); i += 1){
-    SgExpression* as_exp = isSgExpression( this->visit( isl_ast_expr_get_op_arg(node, i) ) );
+  for( int i = 1; i < isl_ast_expr_get_op_n_arg(node); i += 1 ){
+    SgExpression* as_exp = this->visit_op_operand(node, i);
 
     if( this->verbose ){
       cout << string(this->depth*2, ' ') << "exp @ " << static_cast<void*>(as_exp) << endl;
-    }
-
-    if( as_exp == NULL ){
-      cerr << "Could not convert argument " << i << " of call " << name.getString() << " to SgExpression." << endl;
-      abort();
     }
 
     parameter_expressions.push_back( as_exp );
@@ -562,15 +728,57 @@ SgExprStatement* SageTransformationWalker::visit_op_call(isl_ast_expr* node){
 }
 
 SgExpression* SageTransformationWalker::visit_op_access(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) >= 2 );
+
+  // Head will be the running result of an access
+  // Begins as a non access expression; as the root array expressions
+  SgExpression* head = this->visit_op_operand(node, 0);
+
+  // Append accesses
+  for( int i = 1; i < isl_ast_expr_get_op_n_arg(node); i += 1 ){
+    // Create new access expression from head and the i'th operand
+    // Replace head with the new access expression
+    head = buildBinaryExpression<SgPntrArrRefExp>( head, this->visit_op_operand(node, i) );
+
+    if( this->verbose ){
+      cout << string(this->depth*2, ' ') << "access @ " << static_cast<void*>(head) << endl;
+    }
+  }
+
+  return head;
 }
 
 SgExpression* SageTransformationWalker::visit_op_member(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 2 );
+
+  // Get children nodes
+  SgExpression* lhs = this->visit_op_lhs( node );
+  SgExpression* rhs = this->visit_op_rhs( node );
+
+  // Construct using templated buildBinaryExpression
+  SgExpression* exp = buildBinaryExpression<SgDotExp>( lhs, rhs );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "Operation gt @ " << static_cast<void*>(exp) << endl;
+  }
+
+  return exp;
 }
 
 SgExpression* SageTransformationWalker::visit_op_address_of(isl_ast_expr* node){
-  return NULL;
+  assert( isl_ast_expr_get_op_n_arg(node) == 1 );
+
+  // Get child node
+  SgExpression* arg = this->visit_op_unary_operand( node );
+
+  // Construct using templated buildBinaryExpression
+  SgExpression* exp = buildUnaryExpression<SgAddressOfOp>( arg );
+
+  if( this->verbose ){
+    cout << string(this->depth*2, ' ') << "Operation address_of @ " << static_cast<void*>(exp) << endl;
+  }
+
+  return exp;
 }
 
 SgExpression* SageTransformationWalker::visit_op_unknown(isl_ast_expr* node){
@@ -802,9 +1010,7 @@ SgNode* SageTransformationWalker::visit_node_mark(isl_ast_node* node){
 }
 
 SgNode* SageTransformationWalker::visit_node_user(isl_ast_node* node){
-  SgNode* inner = this->visit( isl_ast_node_user_get_expr(node) );
-
-  return inner;
+  return this->visit( isl_ast_node_user_get_expr(node) );
 }
 
 SgNode* SageTransformationWalker::visit_node_unknown(isl_ast_node* node){
