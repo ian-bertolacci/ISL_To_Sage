@@ -77,65 +77,55 @@ void example( char** argv, vector<string> domains, vector<string> maps ){
 
   {
     cout << "SageTransformationWalker:" << endl;
-    bool verbose = true;
+    bool verbose = false;
 
-    // "Sorry, not implemented" as of rose -v 0.9.7.39 (6.23.2016) ???
-    //setSourcePositionClassificationMode( e_sourcePositionCompilerGenerated );
-
-    // Write out a template file.
-    ofstream template_file;
-    //string template_code( "#include <iostream>\nusing namespace std;\nint main(){ int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234))))))))))))))))))))))))))))))))))))))))))))))))))); cout << A << B << C << D << E << F << G << H << I << J << K << L << M << N << O << P << Q << R << S << T << U << V << W << X << Y << Z << a << b << c << d << e << f << g << h << i << j << k << l << m << n << o << p << q << r << s << t << u << v << w << x << y << z << endl; }{int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234))))))))))))))))))))))))))))))))))))))))))))))))))); cout << A << B << C << D << E << F << G << H << I << J << K << L << M << N << O << P << Q << R << S << T << U << V << W << X << Y << Z << a << b << c << d << e << f << g << h << i << j << k << l << m << n << o << p << q << r << s << t << u << v << w << x << y << z << endl; } }");
-    string template_code( "#include <iostream>\nusing namespace std;\nint main(){\n int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\n }");
-    //string template_code( "#include <iostream>\nusing namespace std;\nint main(){ }");
+    // Template file source
+    //string template_code( "#include <iostream>\nusing namespace std;\nint main(){\n int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234)))))))))))))))))))))))))))))))))))))))))))))))))));\n }");
+    string template_code( "#include <iostream>\nusing namespace std;\nint main(){ }");
     std::string template_file_name( "__template_file__.cpp" );
 
+    // Write out template file.
+    ofstream template_file;
     template_file.open( template_file_name.c_str(), ios::trunc | ios::out );
     assert( template_file.is_open() );
-
     template_file << template_code << endl;
-
     template_file.close();
 
+    // Create arguments to frontend to parse template file
     vector<string> project_argv;
     // Apparently it is necessary to have the executable name in the arguments.
     project_argv.push_back( string(argv[0]) );
     project_argv.push_back( template_file_name );
+
     if( verbose ) cout << "Calling Frontend" << endl;
     SgProject* project = frontend( project_argv );
-    if( verbose ) cout << "Parsed template file" << endl;
 
-    // Find the existing declaration node in the tree.
-    // We need the global scope produced by the source file.
-    // This is _not_ what is returned by SgProject.get_globalScopeAcrossFiles()
-    SgFunctionDeclaration* target_decl = findFunctionDeclaration( project, "main", NULL, true);
+    // Find the existing main() definition node in the tree.
+    if( verbose ) cout << "Finding target function definition" << endl;
+    SgFunctionDefinition* target_defn = findFunctionDeclaration( project, "main", NULL, true)->get_definition();
 
     // Run ISL -> Sage walker over ISL tree, rendering it into Sage,
+    if( verbose ) cout << "Calling SageTransformationWalker" << endl;
     SageTransformationWalker walker(verbose);
+    SgStatement* body_stmt = isSgStatement( walker.visit( isl_ast ) );
 
-    SgNode* walker_rendered_ast = walker.visit( isl_ast );
-
-    // 'Cast' into SgStatement (there is not reason, in my mind why this should fail)
-    SgStatement* body_stmt = isSgStatement( walker_rendered_ast );
     if( body_stmt == NULL ){
       cerr << "Could not convert ISL AST into SgStatement" << endl;
       abort();
     }
 
+    // Append rendered ast to the main() body
     if( verbose ) cout << "Inserting into main()" << endl;
-    target_decl->get_definition()->append_statement( body_stmt );
-
-    //if( verbose ) cout << "AST Post Porcessing" << endl;
-    //AstPostProcessing( project );
-
-    if( verbose ) cout << "Fixing Var References" << endl;
-    fixVariableReferences( body_stmt );
+    target_defn->append_statement( body_stmt );
 
     // Write AST to dot file
     if( verbose ) cout << "Writing to dot file" << endl;
     generateDOT( *project );
+
     if( verbose ) cout << "Unparsing" << endl;
     project->unparse();
 
+    // Print generated code
     cout << "Generated Code:" << endl;
     string line;
     ifstream rose_output( (string("rose_") + template_file_name).c_str() );
@@ -166,7 +156,7 @@ int main( int argc, char** argv){
   }
   //*/
 
-  //*
+  /*
   {
     vector<string> domains = {
       string( "[N]->{S[i] : 1 <= i <= N}")

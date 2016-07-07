@@ -20,14 +20,17 @@ TEST_BIN = $(TEST)/bin
 TEST_SRC = $(TEST)/src
 
 INC_FLGS = -I./$(INCLUDE) -I./$(SRC) -I./$(TP_INCLUDE)
-LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl -lrose
+LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl -lrose -lloopchainIR
 
 CXX = g++
 COPTS = -ggdb --std=c++11
-CFLGS = $(COPTS) $(INC_FLGS) $(LIB_FLGS)
+CFLGS = $(COPTS) $(INC_FLGS)
+
+MAKE_JOBS = 4
 
 SHORT_TESTS = isl_only \
-							sage_test
+							sage_test \
+							LCIR_integration
 
 TESTS = $(addprefix $(TEST_BIN)/,$(SHORT_TESTS))
 
@@ -43,7 +46,7 @@ $(OBJS): $(BIN)/%.o : $(SRC)/%.cpp $(INCLUDE)/%.hpp $(INITED_FILE)
 	$(CXX) $(CFLGS) $(COPTS) $< -c -o $@
 
 $(SHORT_TESTS): % : $(TEST_SRC)/%.cpp $(OBJS)
-	$(CXX) $(CFLGS) $(COPTS) $(OBJS) $< -o $(TEST_BIN)/$@
+	$(CXX) $(CFLGS) $(COPTS) $(OBJS) $< $(LIB_FLGS) -o $(TEST_BIN)/$@
 
 # Initialize the project and install third-party materials
 init: initialize
@@ -57,12 +60,21 @@ $(INITED_FILE): $(THIRD_PARTY)
 	# build ISL
 	tar -xzf $(TP_SRC)/isl-0.15.tar.gz -C $(TP_BUILD)/.
 	mv $(TP_BUILD)/isl-0.15 $(TP_BUILD)/isl
-		 cd $(TP_BUILD)/isl \
+	cd $(TP_BUILD)/isl \
 	&& export CPPFLAGS=-ggdb \
 	&& export CFLAGS=-ggdb \
 	&& ./configure --prefix=$(PROJECT_DIR)/$(TP_INSTALL) \
 	&& make -j$(MAKE_JOBS) \
 	&& make install
+	#
+	# clone and build LoopChainIR
+	unzip $(TP_SRC)/LoopChainIR-isl_ast.zip -d $(TP_BUILD)
+	mv $(TP_BUILD)/LoopChainIR-isl_ast $(TP_BUILD)/LoopChainIR
+	make -C $(TP_BUILD)/LoopChainIR -j$(MAKE_JOBS)
+	cp $(TP_BUILD)/LoopChainIR/lib/*.a $(TP_LIBRARY)/.
+	mkdir $(TP_INCLUDE)/LoopChainIR
+	cp $(TP_BUILD)/LoopChainIR/src/*.hpp $(TP_INCLUDE)/LoopChainIR
+	#
 	touch $(INITED_FILE)
 
 # Cleaning
