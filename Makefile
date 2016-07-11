@@ -6,6 +6,7 @@ PROJECT_DIR := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
 BIN = bin
 SRC = src
 INCLUDE = include
+LIB = lib
 
 THIRD_PARTY = third-party
 TP_SRC = $(THIRD_PARTY)/source
@@ -39,7 +40,16 @@ SHORT_OBJS = PrintNodeWalker \
 
 OBJS = $(addprefix $(BIN)/, $(addsuffix .o, $(SHORT_OBJS)))
 
-all: $(INITED_FILE) $(OBJS)
+SHORT_EXE = libisl_sage.a
+
+EXE = $(LIB)/$(SHORT_EXE)
+
+all: $(EXE)
+
+$(SHORT_EXE): $(EXE)
+
+$(EXE): $(OBJS)
+	$(AR) $(ARFLAGS) $@ $^
 
 # Building the Ojbect Files
 $(OBJS): $(BIN)/%.o : $(SRC)/%.cpp $(INCLUDE)/%.hpp $(INITED_FILE)
