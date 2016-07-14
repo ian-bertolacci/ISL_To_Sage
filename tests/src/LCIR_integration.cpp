@@ -29,17 +29,17 @@ int main( int argc, char** argv ){
     LoopChain chain;
 
     {
-      string lower[1] = { "1" };
-      string upper[1] = { "N" };
-      string symbols[1] = { "N" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 1, symbols, 1 ) ) );
+      string lower[2] = { "lb", "lb" };
+      string upper[2] = { "ub", "ub" };
+      string symbols[2] = { "lb", "ub" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
 
     {
-      string lower[1] = { "1" };
-      string upper[1] = { "N" };
-      string symbols[1] = { "N" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 1, symbols, 1 ) ) );
+      string lower[2] = { "lb", "lb" };
+      string upper[2] = { "ub", "ub" };
+      string symbols[2] = { "lb", "ub" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
 
     // Create an ordered list of Transformations
@@ -74,7 +74,7 @@ int main( int argc, char** argv ){
 
   {
     cout << "SageTransformationWalker:" << endl;
-    bool verbose = false;
+    bool verbose = true;
 
     // Template file source
     //string template_code( "#include <iostream>\nusing namespace std;\nint main(){\n int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234)))))))))))))))))))))))))))))))))))))))))))))))))));\n }");
