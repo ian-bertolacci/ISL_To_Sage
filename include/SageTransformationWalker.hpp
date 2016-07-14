@@ -12,14 +12,22 @@ class SageTransformationWalker{
     int depth;
     bool verbose;
     std::stack<SgScopeStatement*> scope_stack;
+    isl_ast_node* isl_root;
+
+    std::vector<SgFunctionCallExp*> statement_macros;
+    SgNode* sage_root;
 
   public:
-    SageTransformationWalker();
-    SageTransformationWalker(bool verbose);
+    SageTransformationWalker( isl_ast_node* isl_root );
+    SageTransformationWalker( isl_ast_node* isl_root, bool verbose );
 
+    std::vector<SgFunctionCallExp*>* getStatementMacroNodes();
+    SgNode* getSageRoot();
+
+  protected:
     // Generic visit switcher methods
-    SgNode* visit( isl_ast_expr* node );
     SgNode* visit( isl_ast_node* node );
+    SgNode* visit( isl_ast_expr* node );
 
     // Operation visit switch method
     SgNode* visit_expr_op(isl_ast_expr* node);

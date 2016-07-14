@@ -21,7 +21,7 @@ TEST_BIN = $(TEST)/bin
 TEST_SRC = $(TEST)/src
 
 INC_FLGS = -I./$(INCLUDE) -I./$(SRC) -I./$(TP_INCLUDE)
-LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl -lrose -lloopchainIR
+LIB_FLGS = -lboost_system -lboost_iostreams -L./$(TP_LIBRARY) -lisl -lrose -lloopchainIR -L./$(LIB) -lisl_sage
 
 CXX = g++
 COPTS = -ggdb --std=c++11

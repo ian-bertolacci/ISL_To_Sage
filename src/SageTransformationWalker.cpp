@@ -12,10 +12,20 @@ using namespace std;
 using namespace SageBuilder;
 using namespace SageInterface;
 
-SageTransformationWalker::SageTransformationWalker( ): SageTransformationWalker(false){ }
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root ): SageTransformationWalker(root, false){ }
 
-SageTransformationWalker::SageTransformationWalker( bool verbose ): depth( -1 ), verbose( verbose ), scope_stack() {
+SageTransformationWalker::std::vector<SgFunctionCallExp*> getStatementMacroNodes();
+SgNode* getSageRoot();SageTransformationWalker( isl_ast_node* isl_root, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(), sage_rooot( NULL ) {
   this->scope_stack.push( new SgGlobal() );
+  this->sage_root = this->visit( this->isl_root );
+}
+
+std::vector<SgFunctionCallExp*>* SageTransformationWalker::getStatementMacroNodes(){
+  return *(this->statement_macros);
+}
+
+SgNode* SageTransformationWalker::getSageRoot(){
+  return this->sage_root;
 }
 
 
@@ -719,6 +729,9 @@ SgExprStatement* SageTransformationWalker::visit_op_call(isl_ast_expr* node){
   }
 
   SgExprStatement* call = buildFunctionCallStmt( name, buildVoidType(), parameters, scope );
+  assert( isSgFunctionCallExp( call ) != NULL );
+
+  statement_macros.push_back( call );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "Call @ " << static_cast<void*>(call) << endl;

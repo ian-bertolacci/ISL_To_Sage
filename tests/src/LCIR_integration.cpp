@@ -103,8 +103,8 @@ int main( int argc, char** argv ){
 
     // Run ISL -> Sage walker over ISL tree, rendering it into Sage,
     if( verbose ) cout << "Calling SageTransformationWalker" << endl;
-    SageTransformationWalker walker(verbose);
-    SgStatement* body_stmt = isSgStatement( walker.visit( isl_ast ) );
+    SageTransformationWalker walker(isl_ast, verbose);
+    SgStatement* body_stmt = isSgStatement( walker.getSageRoot() );
 
     if( body_stmt == NULL ){
       cerr << "Could not convert ISL AST into SgStatement" << endl;
