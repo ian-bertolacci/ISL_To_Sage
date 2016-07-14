@@ -142,7 +142,7 @@ void example( char** argv, vector<string> domains, vector<string> maps ){
 
 int main( int argc, char** argv){
   vector< pair< vector<string>, vector<string> > > tests;
-  /*
+  //*
   {
     vector<string> domains = {
       string( "{S[i] : 1 <= i <= 10}")

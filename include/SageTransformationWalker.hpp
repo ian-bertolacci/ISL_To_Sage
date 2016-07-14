@@ -7,21 +7,32 @@
 #include <map>
 #include <stack>
 
+class function_call_info {
+  public:
+    SgExprStatement* expr_node;
+    SgName name;
+    std::vector<SgExpression*> parameter_expressions;
+
+    function_call_info( SgExprStatement* expr_node, SgName name, std::vector<SgExpression*>& parameter_expressions );
+};
+
 class SageTransformationWalker{
   protected:
+    const bool VISIT_TO_NODE_NOT_IMPLEMENTED = false;
+
     int depth;
     bool verbose;
     std::stack<SgScopeStatement*> scope_stack;
     isl_ast_node* isl_root;
 
-    std::vector<SgFunctionCallExp*> statement_macros;
+    std::vector<function_call_info*> statement_macros;
     SgNode* sage_root;
 
   public:
     SageTransformationWalker( isl_ast_node* isl_root );
     SageTransformationWalker( isl_ast_node* isl_root, bool verbose );
 
-    std::vector<SgFunctionCallExp*>* getStatementMacroNodes();
+    std::vector<function_call_info*>* getStatementMacroNodes();
     SgNode* getSageRoot();
 
   protected:

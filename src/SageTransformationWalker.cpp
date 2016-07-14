@@ -12,16 +12,18 @@ using namespace std;
 using namespace SageBuilder;
 using namespace SageInterface;
 
-SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root ): SageTransformationWalker(root, false){ }
+function_call_info::function_call_info( SgExprStatement* expr_node, SgName name, vector<SgExpression*>& parameter_expressions ): expr_node(expr_node), name(name), parameter_expressions(parameter_expressions)
+{}
 
-SageTransformationWalker::std::vector<SgFunctionCallExp*> getStatementMacroNodes();
-SgNode* getSageRoot();SageTransformationWalker( isl_ast_node* isl_root, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(), sage_rooot( NULL ) {
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root ): SageTransformationWalker(isl_root, false){ }
+
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(), sage_root( NULL ) {
   this->scope_stack.push( new SgGlobal() );
   this->sage_root = this->visit( this->isl_root );
 }
 
-std::vector<SgFunctionCallExp*>* SageTransformationWalker::getStatementMacroNodes(){
-  return *(this->statement_macros);
+vector<function_call_info*>* SageTransformationWalker::getStatementMacroNodes(){
+  return &(this->statement_macros);
 }
 
 SgNode* SageTransformationWalker::getSageRoot(){
@@ -268,6 +270,7 @@ SgExpression* SageTransformationWalker::visit_op_cond_else_operand( isl_ast_expr
 
 
 SgExpression* SageTransformationWalker::visit_op_error(isl_ast_expr* node){
+  assert( this->VISIT_TO_NODE_NOT_IMPLEMENTED );
   return NULL;
 }
 
@@ -729,9 +732,8 @@ SgExprStatement* SageTransformationWalker::visit_op_call(isl_ast_expr* node){
   }
 
   SgExprStatement* call = buildFunctionCallStmt( name, buildVoidType(), parameters, scope );
-  assert( isSgFunctionCallExp( call ) != NULL );
-
-  statement_macros.push_back( call );
+  function_call_info* info = new function_call_info( call, name, parameter_expressions);
+  statement_macros.push_back( info );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "Call @ " << static_cast<void*>(call) << endl;
@@ -795,6 +797,7 @@ SgExpression* SageTransformationWalker::visit_op_address_of(isl_ast_expr* node){
 }
 
 SgExpression* SageTransformationWalker::visit_op_unknown(isl_ast_expr* node){
+  assert( this->VISIT_TO_NODE_NOT_IMPLEMENTED );
   return NULL;
 }
 
@@ -828,15 +831,18 @@ SgIntVal* SageTransformationWalker::visit_expr_int(isl_ast_expr* node){
 }
 
 SgNode* SageTransformationWalker::visit_expr_unknown(isl_ast_expr* node){
+  assert( this->VISIT_TO_NODE_NOT_IMPLEMENTED );
   return NULL;
 }
 
 SgNode* SageTransformationWalker::visit_expr_error(isl_ast_expr* node){
+  assert( this->VISIT_TO_NODE_NOT_IMPLEMENTED );
   return NULL;
 }
 
 
 SgNode* SageTransformationWalker::visit_node_error(isl_ast_node* node){
+  assert( this->VISIT_TO_NODE_NOT_IMPLEMENTED );
   return NULL;
 }
 
@@ -931,10 +937,8 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
     } else {
       body = isSgBasicBlock( for_stmt->get_loop_body() );
 
-      if( body == NULL ){
-        cerr << "Loop body was NOT an SgBasicBlock" << endl;
-        abort();
-      }
+      assert( body != NULL );
+
       body->append_statement( sg_stmt );
       sg_stmt->set_parent( body );
     }
@@ -953,18 +957,10 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
 
 SgNode* SageTransformationWalker::visit_node_if(isl_ast_node* node){
   SgExpression* condition_node = isSgExpression( this->visit( isl_ast_node_if_get_cond(node) ) );
-
-  if( condition_node == NULL ){
-    cerr << "Condition was not an SgExpression" << endl;
-    abort();
-  }
+  assert( condition_node != NULL );
 
   SgStatement* then_node = isSgStatement( this->visit( isl_ast_node_if_get_then(node) ) );
-
-  if( then_node == NULL ){
-    cerr << "Then was not an SgStatement" << endl;
-    abort();
-  }
+  assert( then_node != NULL );
 
   // Always wrap statements as blocks
   if( !isSgBasicBlock(then_node) ){
@@ -975,10 +971,7 @@ SgNode* SageTransformationWalker::visit_node_if(isl_ast_node* node){
   SgStatement* else_node = NULL;
   if( isl_ast_node_if_has_else( node ) ){
     else_node = isSgStatement( this->visit( isl_ast_node_if_get_else(node) ) );
-    if( else_node == NULL ){
-      cerr << "Else was not an SgStatement" << endl;
-      abort();
-    }
+    assert( else_node != NULL );
 
     if( isSgBasicBlock( else_node) ){
       SgBasicBlock* block = buildBasicBlock( else_node );
@@ -1004,11 +997,7 @@ SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
   for( int i = 0; i < isl_ast_node_list_n_ast_node(list); i += 1 ){
     isl_ast_node* node = isl_ast_node_list_get_ast_node(list, i);
     SgStatement* sg_stmt = isSgStatement( this->visit( node ) );
-
-    if( sg_stmt == NULL ){
-      cerr << "Could not convert node to SgStatement" << endl;
-      abort();
-    }
+    assert( sg_stmt != NULL );
 
     block->append_statement( sg_stmt );
   }
@@ -1019,6 +1008,7 @@ SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
 }
 
 SgNode* SageTransformationWalker::visit_node_mark(isl_ast_node* node){
+  assert( this->VISIT_TO_NODE_NOT_IMPLEMENTED );
   return NULL;
 }
 
@@ -1027,5 +1017,6 @@ SgNode* SageTransformationWalker::visit_node_user(isl_ast_node* node){
 }
 
 SgNode* SageTransformationWalker::visit_node_unknown(isl_ast_node* node){
+  assert( this->VISIT_TO_NODE_NOT_IMPLEMENTED );
   return NULL;
 }

@@ -53,10 +53,10 @@ $(EXE): $(OBJS)
 
 # Building the Ojbect Files
 $(OBJS): $(BIN)/%.o : $(SRC)/%.cpp $(INCLUDE)/%.hpp $(INITED_FILE)
-	$(CXX) $(CFLGS) $(COPTS) $< -c -o $@
+	$(CXX) $(CFLGS) $< -c -o $@
 
-$(SHORT_TESTS): % : $(TEST_SRC)/%.cpp $(OBJS)
-	$(CXX) $(CFLGS) $(COPTS) $(OBJS) $< $(LIB_FLGS) -o $(TEST_BIN)/$@
+$(SHORT_TESTS): % : $(TEST_SRC)/%.cpp $(EXE)
+	$(CXX) $(CFLGS) $< $(LIB_FLGS) -o $(TEST_BIN)/$@
 
 # Initialize the project and install third-party materials
 init: initialize
