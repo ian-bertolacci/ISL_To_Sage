@@ -236,10 +236,7 @@ SgExpression* SageTransformationWalker::visit_op_operand( isl_ast_expr* node, in
   assert( isl_ast_expr_get_op_n_arg(node) > pos );
   SgExpression* sg_expr = isSgExpression( this->visit( isl_ast_expr_get_op_arg( node, pos ) ) );
 
-  if( sg_expr == NULL ){
-    cerr << "Operand was not an SgExpression" << endl;
-    abort();
-  }
+  assert( sg_expr != NULL );
 
   return sg_expr;
 }
@@ -354,10 +351,7 @@ SgExpression* SageTransformationWalker::visit_op_max(isl_ast_expr* node){
     cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
   }
 
-  if( scope == NULL ){
-    cerr << "No scope." << endl;
-    abort();
-  }
+  assert( scope != NULL );
 
   vector<SgExpression*> parameter_expressions;
   SgExpression* head = this->visit_op_operand( node, last );
@@ -391,10 +385,7 @@ SgExpression* SageTransformationWalker::visit_op_min(isl_ast_expr* node){
     cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
   }
 
-  if( scope == NULL ){
-    cerr << "No scope." << endl;
-    abort();
-  }
+  assert( scope != NULL );
 
   vector<SgExpression*> parameter_expressions;
   SgExpression* head = this->visit_op_operand( node, last );
@@ -520,10 +511,7 @@ SgExpression* SageTransformationWalker::visit_op_fdiv_q(isl_ast_expr* node){
     cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
   }
 
-  if( scope == NULL ){
-    cerr << "No scope." << endl;
-    abort();
-  }
+  assert( scope != NULL );
 
   SgExpression* call = buildFunctionCallExp( name, buildIntType(), parameters, scope );
 
@@ -726,10 +714,7 @@ SgExprStatement* SageTransformationWalker::visit_op_call(isl_ast_expr* node){
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
   }
-  if( scope == NULL ){
-    cerr << "No scope." << endl;
-    abort();
-  }
+  assert( scope != NULL );
 
   SgExprStatement* call = buildFunctionCallStmt( name, buildVoidType(), parameters, scope );
   function_call_info* info = new function_call_info( call, name, parameter_expressions);
@@ -858,10 +843,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
     // Get initialization expression
     SgExpression* init_exp = isSgExpression( this->visit( isl_ast_node_for_get_init( node ) ) );
 
-    if( init_exp == NULL ){
-      cerr << "Init node in ISL could not be converted to SgExpression" << endl;
-      abort();
-    }
+    assert( init_exp != NULL );
 
     // Build variable declaration
     SgAssignInitializer* initalizer = buildAssignInitializer( init_exp, buildIntType() );
@@ -881,10 +863,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   {
     SgExpression* as_exp = isSgExpression( this->visit( isl_ast_node_for_get_cond( node) ) );
 
-    if( as_exp == NULL ){
-      cerr << "Condition node in ISL could not be converted to SgExpression" << endl;
-      abort();
-    }
+    assert( as_exp != NULL );
 
     condition = buildExprStatement( as_exp );
     if( this->verbose ){
@@ -902,10 +881,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
     // if( this->verbose ) cout << string(this->depth*2, ' ') << "var_ref @ " << static_cast<void*>(var_ref) << endl;
     SgExpression* increment_exp = isSgExpression( this->visit( isl_ast_node_for_get_inc( node ) ) );
 
-    if( increment_exp == NULL ){
-      cerr << "Increment node in ISL could not be converted to SgExpression" << endl;
-      abort();
-    }
+    assert( increment_exp != NULL );
 
     if( this->verbose ){
       cout << string(this->depth*2, ' ') << "exp @ " << static_cast<void*>(increment_exp) << endl;
@@ -927,10 +903,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   {
     SgStatement* sg_stmt = isSgStatement( this->visit( isl_ast_node_for_get_body( node ) ) );
 
-    if( sg_stmt == NULL ){
-      cerr << "Body node in ISL could not be converted to SgStatement" << endl;
-      abort();
-    }
+    assert( sg_stmt != NULL );
 
     if( isSgBasicBlock(sg_stmt) ){
       body = isSgBasicBlock( sg_stmt );
