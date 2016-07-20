@@ -142,7 +142,19 @@ void example( char** argv, vector<string> domains, vector<string> maps ){
 
 int main( int argc, char** argv){
   vector< pair< vector<string>, vector<string> > > tests;
-  //*
+  {
+    vector<string> domains = {
+      string( "{ S1[i,j] : 1 <= i <= 10 and 1 <= j <= 20; S2[i,j] : 1 <= i <= 10 and 1 <= j <= 20}" )
+    };
+
+    vector<string> maps = {
+      string( "{S1[i,j] -> [0,i,j,0]; S2[i,j] -> [1,i,j,0]}" )
+    };
+
+    tests.push_back( make_pair( domains, maps) );
+  }
+
+  /*
   {
     vector<string> domains = {
       string( "{S[i] : 1 <= i <= 10}")

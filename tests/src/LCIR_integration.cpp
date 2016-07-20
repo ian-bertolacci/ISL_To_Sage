@@ -23,25 +23,173 @@ using namespace SageInterface;
 using namespace LoopChainIR;
 
 int main( int argc, char** argv ){
-  isl_ast_node* isl_ast = NULL;
+  bool verbose = true;
+  Schedule* schedule = NULL;
   {
     // Create loop chain
     LoopChain chain;
 
+    // Great breaking case
+    //*
     {
-      string lower[2] = { "lb", "lb" };
-      string upper[2] = { "ub", "ub" };
-      string symbols[2] = { "lb", "ub" };
+      string lower[2] = { "1", "a" };
+      string upper[2] = { "b", "c" };
+      string symbols[3] = { "a", "b", "c" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
+    }
+
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "10", "11" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+    }
+    // */
+
+    /*
+    {
+      string lower[2] = { "a", "b" };
+      string upper[2] = { "c", "d" };
+      string symbols[4] = { "a", "b", "c", "d" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 4 ) ) );
+    }
+
+    // */
+
+    /*
+    // No symbols
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "10", "11" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+    }
+
+    // One symbol
+    {
+      string lower[2] = { "a", "2" };
+      string upper[2] = { "10", "11" };
+      string symbols[1] = { "a" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
+    }
+
+    {
+      string lower[2] = { "1", "a" };
+      string upper[2] = { "10", "11" };
+      string symbols[1] = { "a" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
+    }
+
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "a", "11" };
+      string symbols[1] = { "a" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
+    }
+
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "10", "a" };
+      string symbols[1] = { "a" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
+    }
+
+    // Two symbols
+    {
+      string lower[2] = { "a", "b" };
+      string upper[2] = { "10", "11" };
+      string symbols[2] = { "a", "b" };
       chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
 
     {
-      string lower[2] = { "lb", "lb" };
-      string upper[2] = { "ub", "ub" };
-      string symbols[2] = { "lb", "ub" };
+      string lower[2] = { "a", "2" };
+      string upper[2] = { "b", "11" };
+      string symbols[2] = { "a", "b" };
       chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
 
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "a", "b" };
+      string symbols[2] = { "a", "b" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
+    }
+
+    {
+      string lower[2] = { "a", "2" };
+      string upper[2] = { "10", "b" };
+      string symbols[2] = { "a", "b" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
+    }
+
+    {
+      string lower[2] = { "1", "b" };
+      string upper[2] = { "a", "11" };
+      string symbols[2] = { "a", "b" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
+    }
+
+
+    // Three symbols
+    {
+      string lower[2] = { "a", "b" };
+      string upper[2] = { "10", "c" };
+      string symbols[3] = { "a", "b", "c" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
+    }
+
+    {
+      string lower[2] = { "a", "b" };
+      string upper[2] = { "c", "11" };
+      string symbols[3] = { "a", "b", "c" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
+    }
+
+    {
+      string lower[2] = { "a", "2" };
+      string upper[2] = { "b", "c" };
+      string symbols[3] = { "a", "b", "c" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
+    }
+
+    {
+      string lower[2] = { "1", "a" };
+      string upper[2] = { "b", "c" };
+      string symbols[3] = { "a", "b", "c" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
+    }
+    // Four symbols
+    {
+      string lower[2] = { "a", "b" };
+      string upper[2] = { "c", "d" };
+      string symbols[4] = { "a", "b", "c", "d" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 4 ) ) );
+    }
+
+    // No symbols
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "10", "11" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+    }
+    // */
+
+    /*
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "10", "20" };
+      //string symbols[2] = { "lb1", "ub1" };
+      //chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+    }
+
+    {
+      string lower[2] = { "3", "4" };
+      string upper[2] = { "11", "21" };
+      //string symbols[2] = { "lb1", "ub1" };
+      //chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+    }
+    // */
     // Create an ordered list of Transformations
     vector<Transformation*> schedulers;
 
@@ -49,32 +197,33 @@ int main( int argc, char** argv ){
     // In this case we are fusing loops 0 and 1.
     // This will result in both loop bodies residing in a single loop, however
     // the body of loop 0 will come before the body of loop 1
-    vector<LoopChain::size_type> fuse_these;
-    fuse_these.push_back( (LoopChain::size_type) 0 );
-    fuse_these.push_back( (LoopChain::size_type) 1 );
+    //vector<LoopChain::size_type> fuse_these;
+    //fuse_these.push_back( (LoopChain::size_type) 0 );
+    //fuse_these.push_back( (LoopChain::size_type) 1 );
 
     // Create a FusionTransformation object, passing it the list of loops to fuse
-    schedulers.push_back( new FusionTransformation( fuse_these ) );
+    //schedulers.push_back( new FusionTransformation( fuse_these ) );
 
     // Create schedule from loop cahin
-    Schedule sched( chain );
-    // Apply FusionTransformation
-    sched.apply( schedulers );
+    schedule = new Schedule( chain );
+    // Apply transformation
+    schedule->apply( schedulers );
 
-    // Get root
-    IslAstRoot& root = *sched.codegenToIslAst();
-    isl_ast = root.root;
+    // print domains and Transformations
+    cout << *schedule << endl;
+
+    // print codegen from ISL's perspective
+    cout << "ISL's codegen:\n" << schedule->codegen() << endl;
   }
 
-  {
+  if( verbose ){
     PrintNodeWalker walker;
     cout << "PrintNodeWalker:" << endl;
-    cout << walker.visit( isl_ast ) << endl;
+    cout << walker.visit( schedule->codegenToIslAst()->root ) << endl;
   }
 
   {
     cout << "SageTransformationWalker:" << endl;
-    bool verbose = true;
 
     // Template file source
     //string template_code( "#include <iostream>\nusing namespace std;\nint main(){\n int A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;\nA = (B = (C = (D = (E = (F = (G = (H = (I = (J = (K = (L = (M = (N = (O = (P = (Q = (R = (S = (T = (U = (V = (W = (X = (Y = (Z = (a = (b = (c = (d = (e = (f = (g = (h = (i = (j = (k = (l = (m = (n = (o = (p = (q = (r = (s = (t = (u = (v = (w = (x = (y = (z = 1234)))))))))))))))))))))))))))))))))))))))))))))))))));\n }");
@@ -103,7 +252,7 @@ int main( int argc, char** argv ){
 
     // Run ISL -> Sage walker over ISL tree, rendering it into Sage,
     if( verbose ) cout << "Calling SageTransformationWalker" << endl;
-    SageTransformationWalker walker(isl_ast, verbose);
+    SageTransformationWalker walker(schedule, verbose);
     SgStatement* body_stmt = isSgStatement( walker.getSageRoot() );
 
     if( body_stmt == NULL ){
@@ -114,6 +263,7 @@ int main( int argc, char** argv ){
     // Append rendered ast to the main() body
     if( verbose ) cout << "Inserting into main()" << endl;
     target_defn->append_statement( body_stmt );
+    //fixStatement ( target_defn );
 
     // Write AST to dot file
     if( verbose ) cout << "Writing to dot file" << endl;
