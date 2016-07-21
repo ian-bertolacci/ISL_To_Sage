@@ -33,15 +33,15 @@ int main( int argc, char** argv ){
     //*
     {
       string lower[2] = { "1", "a" };
-      string upper[2] = { "b", "c" };
-      string symbols[3] = { "a", "b", "c" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
+      string upper[2] = { "10", "b" };
+      string symbols[2] = { "a", "b" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
 
     {
       string lower[2] = { "1", "2" };
       string upper[2] = { "10", "11" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+      //chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
     }
     // */
 
