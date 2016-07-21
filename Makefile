@@ -31,7 +31,8 @@ MAKE_JOBS = 4
 
 SHORT_TESTS = isl_only \
 							sage_test \
-							LCIR_integration
+							LCIR_integration \
+							segfault_test
 
 TESTS = $(addprefix $(TEST_BIN)/,$(SHORT_TESTS))
 
