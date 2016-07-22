@@ -56,8 +56,8 @@ string AST_To_File( char* argv[], SgStatement* ( *producer )( ) ) {
 Constructs the AST:
 
 {
-  for (int c1 = 1; c1 <= b; c1 += 1)
-    for (int c2 = a; c2 <= c; c2 += 1)
+  for (int c1 = 1; c1 <= 10; c1 += 1)
+    for (int c2 = a; c2 <= b; c2 += 1)
       statement_0(c1, c2);
   for (int c1 = 1; c1 <= 10; c1 += 1)
     for (int c2 = 2; c2 <= 11; c2 += 1)
@@ -98,20 +98,16 @@ SgStatement* build_example( ) {
     var_decl = buildVariableDeclaration( SgName( string( "b" ) ), buildIntType( ), NULL, scope_stack.top( ) );
     chain_block->append_statement( var_decl );
     var_decl->set_parent( chain_block );
-
-    var_decl = buildVariableDeclaration( SgName( string( "c" ) ), buildIntType( ), NULL, scope_stack.top( ) );
-    chain_block->append_statement( var_decl );
-    var_decl->set_parent( chain_block );
   }
 
   /*
   This block builds the first loop nest:
-  for (int c1 = 1; c1 <= b; c1 += 1)
-    for (int c2 = a; c2 <= c; c2 += 1)
+  for (int c1 = 1; c1 <= 10; c1 += 1)
+    for (int c2 = a; c2 <= b; c2 += 1)
       statement_0(c1, c2);
 
   Starting with the outer loop:
-  for (int c1 = 1; c1 <= b; c1 += 1)
+  for (int c1 = 1; c1 <= 10; c1 += 1)
   */
   {
     // Build inititialization statement
@@ -140,10 +136,10 @@ SgStatement* build_example( ) {
       // c1
       SgExpression* lhs = isSgExpression( buildVarRefExp( *outer_iterator, scope_stack.top( ) ) );
 
-      // b
-      SgExpression* rhs = isSgExpression( buildVarRefExp( SgName( string( "b" ) ), scope_stack.top( ) ) );
+      // 10
+      SgExpression* rhs = isSgExpression( buildIntVal(10) );
 
-      // c1 <= b
+      // c1 <= 10
       SgLessOrEqualOp* exp = buildBinaryExpression< SgLessOrEqualOp >( lhs, rhs );
 
       // convert to SgExpression
@@ -176,7 +172,7 @@ SgStatement* build_example( ) {
 
       /*
       This builds the inner loop:
-      for (int c2 = a; c2 <= c; c2 += 1)
+      for (int c2 = a; c2 <= b; c2 += 1)
       */
       {
         // Build inititialization statement
@@ -209,7 +205,7 @@ SgStatement* build_example( ) {
             SgExpression* lhs = isSgExpression( buildVarRefExp( *inner_iterator, scope_stack.top( ) ) );
 
             // b
-            SgExpression* rhs = isSgExpression( buildVarRefExp( SgName( string( "c" ) ), scope_stack.top( ) ) );
+            SgExpression* rhs = isSgExpression( buildVarRefExp( SgName( string( "b" ) ), scope_stack.top( ) ) );
             // Construct using templated buildBinaryExpression
             exp = buildBinaryExpression< SgLessOrEqualOp >( lhs, rhs );
           }
@@ -316,7 +312,7 @@ SgStatement* build_example( ) {
       statement_0(c1, c2);
 
   Starting with the outer loop:
-  for (int c1 = 1; c1 <= b; c1 += 1)
+  for (int c1 = 1; c1 <= 10; c1 += 1)
   */
   {
     // Build inititialization statement
