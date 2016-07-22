@@ -46,10 +46,6 @@ string AST_To_File( char* argv[], SgStatement* ( *producer )( ) ) {
   cout << "Inserting into main()" << endl;
   target_defn->append_statement( root );
 
-  // Write AST to dot file
-  cout << "Writing to dot file" << endl;
-  generateDOT( *project );
-
   cout << "Unparsing" << endl;
   project->unparse( );
 
@@ -314,7 +310,7 @@ SgStatement* build_example( ) {
   }
 
   /*
-  This block builds the first loop nest:
+  This block builds the Second loop nest:
   for (int c1 = 1; c1 <= 10; c1 += 1)
     for (int c2 = 2; c2 <= 11; c2 += 1)
       statement_0(c1, c2);
