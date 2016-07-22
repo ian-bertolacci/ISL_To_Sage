@@ -41,7 +41,7 @@ int main( int argc, char** argv ){
     {
       string lower[2] = { "1", "2" };
       string upper[2] = { "10", "11" };
-      //chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
     }
     // */
 
