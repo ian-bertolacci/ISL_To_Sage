@@ -47,7 +47,7 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
   assert( result != NULL );
 
   appendStatement( result, deep_block );
-  appendStatement( deep_block, wrapping_block)
+  appendStatement( deep_block, wrapping_block);
   // result->set_parent( wrapping_block );
 
   this->scope_stack.pop();
