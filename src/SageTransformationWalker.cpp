@@ -932,7 +932,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   SgForStatement* for_stmt = buildForStatement( initialization, condition, increment, body );
   {
     this->scope_stack.push( for_stmt );
-    this->scope_stack.push( getLoopBody( for_stmt ) );
+    this->scope_stack.push( isSgScopeStatement( getLoopBody( for_stmt ) ) );
     SgStatement* sg_stmt = isSgStatement( this->visit( isl_ast_node_for_get_body( node ) ) );
     this->scope_stack.pop();
     this->scope_stack.pop();
