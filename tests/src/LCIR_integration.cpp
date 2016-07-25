@@ -37,7 +37,7 @@ int main( int argc, char** argv ){
       string symbols[2] = { "a", "b" };
       chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
-    /*
+    
     {
       string lower[2] = { "1", "2" };
       string upper[2] = { "10", "11" };
