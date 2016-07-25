@@ -53,7 +53,7 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
   this->scope_stack.pop();
   this->scope_stack.pop();
 
-  this->sage_root = deep_block;
+  this->sage_root = wrapping_block;
 }
 
 vector<function_call_info*>* SageTransformationWalker::getStatementMacroNodes(){
