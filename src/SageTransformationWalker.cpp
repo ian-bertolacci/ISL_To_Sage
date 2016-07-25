@@ -36,15 +36,15 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
 
   for( auto symbol = symbols.begin(); symbol != symbols.end(); ++symbol ){
     SgVariableDeclaration* var_decl = buildVariableDeclaration( *symbol, buildIntType(), NULL, this->scope_stack.top() );
-    wrapping_block->append_statement( var_decl );
-    var_decl->set_parent( wrapping_block );
+    appendStatement( var_decl, wrapping_block );
+    // var_decl->set_parent( wrapping_block );
   }
 
   SgStatement* result = isSgStatement( this->visit( this->isl_root ) );
   assert( result != NULL );
 
-  wrapping_block->append_statement( result );
-  result->set_parent( wrapping_block );
+  appendStatement( result, wrapping_block );
+  // result->set_parent( wrapping_block );
 
   this->scope_stack.pop();
   this->scope_stack.pop();
@@ -944,10 +944,10 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
 
       assert( body != NULL );
 
-      body->append_statement( sg_stmt );
-      sg_stmt->set_parent( body );
+      appendStatement( sg_stmt, body );
+      // sg_stmt->set_parent( body );
     }
-    body->set_parent( for_stmt );
+    // body->set_parent( for_stmt );
     for_stmt->set_loop_body( body );
   }
 
@@ -1003,8 +1003,8 @@ SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
     SgStatement* sg_stmt = isSgStatement( this->visit( node ) );
     assert( sg_stmt != NULL );
 
-    block->append_statement( sg_stmt );
-    sg_stmt->set_parent( block );
+    appendStatement( sg_stmt, block );
+    // sg_stmt->set_parent( block );
   }
 
   this->scope_stack.pop();
