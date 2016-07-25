@@ -20,10 +20,10 @@ function_call_info::function_call_info( SgExprStatement* expr_node, SgName name,
 SageTransformationWalker::SageTransformationWalker( Schedule* schedule ): SageTransformationWalker(schedule, false){ }
 
 SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), schedule(schedule), isl_root( schedule->codegenToIslAst()->root ), statement_macros(), sage_root( NULL ) {
-  // this->scope_stack.push( new SgGlobal() );
+  this->scope_stack.push( new SgGlobal() );
 
   SgBasicBlock* wrapping_block = buildBasicBlock();
-  // this->scope_stack.push( wrapping_block );
+  this->scope_stack.push( wrapping_block );
 
   LoopChain chain = this->schedule->getChain();
   set<string> symbols;
@@ -35,7 +35,7 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
   }
 
   for( auto symbol = symbols.begin(); symbol != symbols.end(); ++symbol ){
-    SgVariableDeclaration* var_decl = buildVariableDeclaration( *symbol, buildIntType() ); //, NULL, this->scope_stack.top() );
+    SgVariableDeclaration* var_decl = buildVariableDeclaration( *symbol, buildIntType(), NULL, this->scope_stack.top() );
     appendStatement( var_decl, wrapping_block );
     // var_decl->set_parent( wrapping_block );
   }
@@ -46,8 +46,8 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
   appendStatement( result, wrapping_block );
   // result->set_parent( wrapping_block );
 
-  // this->scope_stack.pop();
-  // this->scope_stack.pop();
+  this->scope_stack.pop();
+  this->scope_stack.pop();
 
   this->sage_root = wrapping_block;
 }
@@ -819,7 +819,7 @@ SgExpression* SageTransformationWalker::visit_op_unknown(isl_ast_expr* node){
 
 SgVarRefExp* SageTransformationWalker::visit_expr_id(isl_ast_expr* node){
   SgName name( isl_id_get_name( isl_ast_expr_get_id(node) ) );
-  SgVarRefExp* var_ref = buildVarRefExp( name ); //, this->scope_stack.top() );
+  SgVarRefExp* var_ref = buildVarRefExp( name, this->scope_stack.top() );
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "id: " << name.getString() << " @ " << var_ref << endl;
   }
@@ -878,7 +878,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
 
     // Build variable declaration
     SgAssignInitializer* initalizer = buildAssignInitializer( init_exp, buildIntType() );
-    SgVariableDeclaration* var_decl = buildVariableDeclaration( *name, buildIntType(), initalizer ); //, this->scope_stack.top() );
+    SgVariableDeclaration* var_decl = buildVariableDeclaration( *name, buildIntType(), initalizer, this->scope_stack.top() );
 
     // Building the variable decl seems sufficient.
     initialization = var_decl;
@@ -906,7 +906,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   SgExpression* increment = NULL;
   {
 
-    SgVarRefExp* var_ref = buildVarRefExp( buildInitializedName( *name, buildIntType() ) ); //this->scope_stack.top() );
+    SgVarRefExp* var_ref = buildVarRefExp( buildInitializedName( *name, buildIntType() ), this->scope_stack.top() );
 
     // string tab((this->depth+1)*2, ' ');
     // if( this->verbose ) cout << string(this->depth*2, ' ') << "var_ref @ " << static_cast<void*>(var_ref) << endl;
@@ -931,9 +931,9 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   // Construct for loop node
   SgForStatement* for_stmt = buildForStatement( initialization, condition, increment, body );
   {
-    // this->scope_stack.push( for_stmt );
+    this->scope_stack.push( for_stmt );
     SgStatement* sg_stmt = isSgStatement( this->visit( isl_ast_node_for_get_body( node ) ) );
-    // this->scope_stack.pop();
+    this->scope_stack.pop();
 
     assert( sg_stmt != NULL );
 
@@ -991,7 +991,7 @@ SgNode* SageTransformationWalker::visit_node_if(isl_ast_node* node){
 SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
   SgBasicBlock* block = buildBasicBlock();
 
-  // this->scope_stack.push( block );
+  this->scope_stack.push( block );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "Block @ "<< static_cast<void*>(block) << endl;
@@ -1007,7 +1007,7 @@ SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
     // sg_stmt->set_parent( block );
   }
 
-  // this->scope_stack.pop();
+  this->scope_stack.pop();
 
   return block;
 }
