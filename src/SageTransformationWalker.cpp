@@ -940,7 +940,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
     if( isSgBasicBlock(sg_stmt) ){
       body = isSgBasicBlock( sg_stmt );
     } else {
-      body = isSgBasicBlock( for_stmt->get_loop_body() );
+      body = isSgBasicBlock( getLoopBody( for_stmt ) );
 
       assert( body != NULL );
 
