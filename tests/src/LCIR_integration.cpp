@@ -266,9 +266,10 @@ int main( int argc, char** argv ){
     //fixStatement ( target_defn );
 
     // Write AST to dot file
+    /*
     if( verbose ) cout << "Writing to dot file" << endl;
     generateDOT( *project );
-
+    */
     if( verbose ) cout << "Unparsing" << endl;
     project->unparse();
 
