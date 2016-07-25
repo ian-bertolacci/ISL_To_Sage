@@ -262,7 +262,7 @@ int main( int argc, char** argv ){
 
     // Append rendered ast to the main() body
     if( verbose ) cout << "Inserting into main()" << endl;
-    target_defn->append_statement( body_stmt );
+    appendStatement( body_stmt, target_defn );
     //fixStatement ( target_defn );
 
     // Write AST to dot file
