@@ -41,7 +41,7 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
   }
 
   SgBasicBlock* deep_block = buildBasicBlock();
-  this->scope_stack.push( wrapping_block );
+  this->scope_stack.push( deep_block );
 
   SgStatement* result = isSgStatement( this->visit( this->isl_root ) );
   assert( result != NULL );
