@@ -40,16 +40,20 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
     // var_decl->set_parent( wrapping_block );
   }
 
+  SgBasicBlock* deep_block = buildBasicBlock();
+  this->scope_stack.push( wrapping_block );
+
   SgStatement* result = isSgStatement( this->visit( this->isl_root ) );
   assert( result != NULL );
 
-  appendStatement( result, wrapping_block );
+  appendStatement( result, deep_block );
+  appendStatement( deep_block, wrapping_block)
   // result->set_parent( wrapping_block );
 
   this->scope_stack.pop();
   this->scope_stack.pop();
 
-  this->sage_root = wrapping_block;
+  this->sage_root = deep_block;
 }
 
 vector<function_call_info*>* SageTransformationWalker::getStatementMacroNodes(){
