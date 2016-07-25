@@ -37,14 +37,14 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
   for( auto symbol = symbols.begin(); symbol != symbols.end(); ++symbol ){
     SgVariableDeclaration* var_decl = buildVariableDeclaration( *symbol, buildIntType(), NULL, this->scope_stack.top() );
     wrapping_block->append_statement( var_decl );
-    var_decl->set_parent( wrapping_block );
+    // var_decl->set_parent( wrapping_block );
   }
 
   SgStatement* result = isSgStatement( this->visit( this->isl_root ) );
   assert( result != NULL );
 
   wrapping_block->append_statement( result );
-  result->set_parent( wrapping_block );
+  // result->set_parent( wrapping_block );
 
   this->scope_stack.pop();
   this->scope_stack.pop();
@@ -945,9 +945,9 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
       assert( body != NULL );
 
       body->append_statement( sg_stmt );
-      sg_stmt->set_parent( body );
+      // sg_stmt->set_parent( body );
     }
-    body->set_parent( for_stmt );
+    // body->set_parent( for_stmt );
     for_stmt->set_loop_body( body );
   }
 
