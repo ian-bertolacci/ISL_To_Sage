@@ -948,7 +948,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
       // sg_stmt->set_parent( body );
     }
     // body->set_parent( for_stmt );
-    for_stmt->set_loop_body( body );
+    setLoopBody( for_stmt, body );
   }
 
   this->depth -= 1;
