@@ -31,15 +31,10 @@ int main( int argc, char** argv ){
 
     //* Working Case
     {
-      string lower[2] = { "1", "2" };
-      string upper[2] = { "10", "11" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
-    }
-
-    {
-      string lower[2] = { "3", "4" };
-      string upper[2] = { "12", "13" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+      string lower[2] = { "1", "a" };
+      string upper[2] = { "10", "b" };
+      string symbols[2] = { "a", "b" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
     // */
 
