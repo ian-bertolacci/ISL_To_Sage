@@ -140,19 +140,29 @@ int main( int argc, char** argv ){
     if( verbose ) cout << "Finding target function definition" << endl;
     SgFunctionDefinition* target_defn = findFunctionDeclaration( project, "main", NULL, true)->get_definition();
 
-    // Run ISL -> Sage walker over ISL tree, rendering it into Sage,
-    if( verbose ) cout << "Calling SageTransformationWalker" << endl;
-    SageTransformationWalker walker(schedule, verbose);
-    SgStatement* body_stmt = isSgStatement( walker.getSageRoot() );
-
-    if( body_stmt == NULL ){
-      cerr << "Could not convert ISL AST into SgStatement" << endl;
-      abort();
+    if( verbose ) cout << "Synthesizing symbol definitions" << endl;
+    LoopChain chain = schedule->getChain();
+    set<string> symbols;
+    for( LoopChain::size_type nest_idx = 0; nest_idx != chain.length(); ++nest_idx ){
+      RectangularDomain& domain = chain.getNest( nest_idx ).getDomain();
+      for( RectangularDomain::size_type symbol_idx = 0; symbol_idx != domain.symbolics(); ++symbol_idx ){
+        symbols.insert( domain.getSymbol( symbol_idx ) );
+      }
     }
 
-    // Append rendered ast to the main() body
-    if( verbose ) cout << "Inserting into main()" << endl;
-    appendStatement( body_stmt, target_defn );
+    if( verbose ) cout << "Injecting symbol definitions" << endl;
+    for( auto symbol = symbols.begin(); symbol != symbols.end(); ++symbol ){
+      SgVariableDeclaration* var_decl = buildVariableDeclaration( *symbol, buildIntType(), NULL, target_defn );
+      target_defn->append_statement( var_decl );
+    }
+
+    if( verbose ) cout << "Injecting walker injection site" << endl;
+    SgBasicBlock* injection_site = buildBasicBlock();
+    target_defn->append_statement( injection_site );
+
+    // Run ISL -> Sage walker over ISL tree, rendering it into Sage,
+    if( verbose ) cout << "Calling SageTransformationWalker" << endl;
+    SageTransformationWalker walker(schedule->codegenToIslAst()->root, injection_site, verbose);
 
     if( verbose ) cout << "Unparsing" << endl;
     project->unparse();

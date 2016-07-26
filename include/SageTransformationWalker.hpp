@@ -6,7 +6,7 @@
 #include "rose.h"
 #include <list>
 #include <map>
-#include <stack>
+#include <deque>
 
 class function_call_info {
   public:
@@ -23,21 +23,32 @@ class SageTransformationWalker{
 
     int depth;
     bool verbose;
-    std::stack<SgScopeStatement*> scope_stack;
+    std::deque<SgScopeStatement*> scope_stack;
     LoopChainIR::Schedule* schedule;
     isl_ast_node* isl_root;
 
     std::vector<function_call_info*> statement_macros;
-    SgNode* sage_root;
+    SgScopeStatement* injection_site;
 
   public:
-    SageTransformationWalker( LoopChainIR::Schedule* schedule );
-    SageTransformationWalker( LoopChainIR::Schedule* schedule, bool verbose );
+    SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site );
+    SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose );
 
     std::vector<function_call_info*>* getStatementMacroNodes();
-    SgNode* getSageRoot();
+    SgScopeStatement* getInjectionRoot();
 
   protected:
+    // Scope statck operations
+    bool empty();
+    SgScopeStatement* top();
+    SgScopeStatement* bottom();
+    SgScopeStatement* pop();
+    SgScopeStatement* pop_top();
+    SgScopeStatement* pop_bottom();
+    void push( SgScopeStatement* scope );
+    void push_top( SgScopeStatement* scope );
+    void push_bottom( SgScopeStatement* scope );
+
     // Generic visit switcher methods
     SgNode* visit( isl_ast_node* node );
     SgNode* visit( isl_ast_expr* node );

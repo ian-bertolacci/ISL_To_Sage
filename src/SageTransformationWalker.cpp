@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 #include <set>
+#include <deque>
 
 #include "util.hpp"
 #include "SageTransformationWalker.hpp"
@@ -17,45 +18,85 @@ using namespace LoopChainIR;
 function_call_info::function_call_info( SgExprStatement* expr_node, SgName name, vector<SgExpression*>& parameter_expressions ): expr_node(expr_node), name(name), parameter_expressions(parameter_expressions)
 {}
 
-SageTransformationWalker::SageTransformationWalker( Schedule* schedule ): SageTransformationWalker(schedule, false){ }
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site ): SageTransformationWalker(isl_root, injection_site, false){ }
 
-SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), schedule(schedule), isl_root( schedule->codegenToIslAst()->root ), statement_macros(), sage_root( NULL ) {
-  this->scope_stack.push( new SgGlobal() );
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(), injection_site( injection_site ) {
+  SgGlobal* global = getGlobalScope( injection_site );
 
-  SgBasicBlock* wrapping_block = buildBasicBlock();
-  this->scope_stack.push( wrapping_block );
-
-  LoopChain chain = this->schedule->getChain();
-  set<string> symbols;
-  for( LoopChain::size_type nest_idx = 0; nest_idx != chain.length(); ++nest_idx ){
-    RectangularDomain& domain = chain.getNest( nest_idx ).getDomain();
-    for( RectangularDomain::size_type symbol_idx = 0; symbol_idx != domain.symbolics(); ++symbol_idx ){
-      symbols.insert(  domain.getSymbol( symbol_idx ) );
-    }
+  if( verbose ){
+    cout << "Injection site: "<< static_cast<void*>( injection_site ) << endl
+         << "Global: " << static_cast<void*>( global ) << endl;
   }
 
-  for( auto symbol = symbols.begin(); symbol != symbols.end(); ++symbol ){
-    SgVariableDeclaration* var_decl = buildVariableDeclaration( *symbol, buildIntType(), NULL, this->scope_stack.top() );
-    appendStatement( var_decl, wrapping_block );
+  // Form the initial scope stack in bottom-up order (in reverse order they will appear on the stack)
+  // Start with injection site, as it is inner most
+  this->push_bottom( injection_site );
+  // As long as we havent already encountered the global scope, push next enclosing scope
+  while( this->bottom() != global ){
+    this->push_bottom( getEnclosingScope( this->bottom() ) );
+    if( verbose ) cout << "Pushing scope " << static_cast<void*>( this->bottom() ) << endl;
   }
+
+  assert( this->top() == injection_site );
 
   SgStatement* result = isSgStatement( this->visit( this->isl_root ) );
   assert( result != NULL );
 
-  appendStatement( result, wrapping_block );
+  appendStatement( result, injection_site );
 
-  this->scope_stack.pop();
-  this->scope_stack.pop();
+  while( ! this->empty() ){
+    this->pop();
+  }
 
-  this->sage_root = wrapping_block;
 }
+
+bool SageTransformationWalker::empty(){
+  return this->scope_stack.empty();
+}
+
+SgScopeStatement* SageTransformationWalker::top(){
+  return this->scope_stack.back();
+}
+
+SgScopeStatement* SageTransformationWalker::bottom(){
+  return this->scope_stack.front();
+}
+
+SgScopeStatement* SageTransformationWalker::pop(){
+  return this->pop_top();
+}
+
+SgScopeStatement* SageTransformationWalker::pop_top(){
+  SgScopeStatement* ret = this->top();
+  this->scope_stack.pop_back();
+  return ret;
+}
+
+SgScopeStatement* SageTransformationWalker::pop_bottom(){
+  SgScopeStatement* ret = this->bottom();
+  this->scope_stack.pop_front();
+  return ret;
+}
+
+void SageTransformationWalker::push( SgScopeStatement* scope ){
+  this->push_top( scope );
+}
+
+void SageTransformationWalker::push_top( SgScopeStatement* scope ){
+  this->scope_stack.push_back( scope );
+}
+
+void SageTransformationWalker::push_bottom( SgScopeStatement* scope ){
+  this->scope_stack.push_front( scope );
+}
+
 
 vector<function_call_info*>* SageTransformationWalker::getStatementMacroNodes(){
   return &(this->statement_macros);
 }
 
-SgNode* SageTransformationWalker::getSageRoot(){
-  return this->sage_root;
+SgScopeStatement* SageTransformationWalker::getInjectionRoot(){
+  return this->injection_site;
 }
 
 
@@ -817,7 +858,7 @@ SgExpression* SageTransformationWalker::visit_op_unknown(isl_ast_expr* node){
 
 SgVarRefExp* SageTransformationWalker::visit_expr_id(isl_ast_expr* node){
   SgName name( isl_id_get_name( isl_ast_expr_get_id(node) ) );
-  SgVarRefExp* var_ref = buildVarRefExp( name, this->scope_stack.top() );
+  SgVarRefExp* var_ref = buildVarRefExp( name, this->top() );
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "id: " << name.getString() << " @ " << var_ref << endl;
   }
@@ -876,7 +917,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
 
     // Build variable declaration
     SgAssignInitializer* initalizer = buildAssignInitializer( init_exp, buildIntType() );
-    SgVariableDeclaration* var_decl = buildVariableDeclaration( *name, buildIntType(), initalizer, this->scope_stack.top() );
+    SgVariableDeclaration* var_decl = buildVariableDeclaration( *name, buildIntType(), initalizer, this->top() );
 
     // Building the variable decl seems sufficient.
     initialization = var_decl;
@@ -904,7 +945,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   SgExpression* increment = NULL;
   {
 
-    SgVarRefExp* var_ref = buildVarRefExp( buildInitializedName( *name, buildIntType() ), this->scope_stack.top() );
+    SgVarRefExp* var_ref = buildVarRefExp( buildInitializedName( *name, buildIntType() ), this->top() );
 
     // string tab((this->depth+1)*2, ' ');
     // if( this->verbose ) cout << string(this->depth*2, ' ') << "var_ref @ " << static_cast<void*>(var_ref) << endl;
@@ -929,11 +970,11 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   // Construct for loop node
   SgForStatement* for_stmt = buildForStatement( initialization, condition, increment, body );
   {
-    this->scope_stack.push( for_stmt );
-    this->scope_stack.push( isSgScopeStatement( getLoopBody( for_stmt ) ) );
+    this->push( for_stmt );
+    this->push( isSgScopeStatement( getLoopBody( for_stmt ) ) );
     SgStatement* sg_stmt = isSgStatement( this->visit( isl_ast_node_for_get_body( node ) ) );
-    this->scope_stack.pop();
-    this->scope_stack.pop();
+    this->pop();
+    this->pop();
 
     assert( sg_stmt != NULL );
 
@@ -989,7 +1030,7 @@ SgNode* SageTransformationWalker::visit_node_if(isl_ast_node* node){
 SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
   SgBasicBlock* block = buildBasicBlock();
 
-  this->scope_stack.push( block );
+  this->push( block );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "Block @ "<< static_cast<void*>(block) << endl;
@@ -1004,7 +1045,7 @@ SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
     appendStatement( sg_stmt, block );
   }
 
-  this->scope_stack.pop();
+  this->pop();
 
   return block;
 }
