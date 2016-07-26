@@ -43,7 +43,14 @@ int main( int argc, char** argv ){
     }
     // */
 
-    // Great breaking case
+    /*
+    Great breaking case.
+    Produces errors:
+    1. Segfault when generateDOT
+    2. the following error when unparsing:
+      LCIR_integration: ../../../rose_dev/src/backend/unparser/nameQualificationSupport.C:5081: virtual NameQualificationInheritedAttribute NameQualificationTraversal::evaluateInheritedAttribute(SgNode*, NameQualificationInheritedAttribute): Assertion `initializedName != __null' failed.
+      Aborted
+    */
     /*
     {
       string lower[2] = { "1", "a" };
@@ -60,168 +67,42 @@ int main( int argc, char** argv ){
     // */
 
     /*
-    {
-      string lower[2] = { "a", "b" };
-      string upper[2] = { "c", "d" };
-      string symbols[4] = { "a", "b", "c", "d" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 4 ) ) );
+    Great alternative breaking case.
+    Produces code:
+    for (int c1 = 1; c1 <= 10; c1 = c1 + 1) {
+      for (int c2 = c2; c2 <= c1; c2 = c2 + 1) {
+        statement_0(a,c2);
+      }
     }
-
-    // */
-
+    for (int c1 = 1; c1 <= 10; c1 = c1 + 1) {
+      for (int c2 = 2; c2 <= a; c2 = c2 + 1) {
+        statement_1(c1,c2);
+      }
+    }
+    */
     /*
-    // No symbols
-    {
-      string lower[2] = { "1", "2" };
-      string upper[2] = { "10", "11" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
-    }
-
-    // One symbol
-    {
-      string lower[2] = { "a", "2" };
-      string upper[2] = { "10", "11" };
-      string symbols[1] = { "a" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
-    }
-
     {
       string lower[2] = { "1", "a" };
-      string upper[2] = { "10", "11" };
-      string symbols[1] = { "a" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
-    }
-
-    {
-      string lower[2] = { "1", "2" };
-      string upper[2] = { "a", "11" };
-      string symbols[1] = { "a" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
+      string upper[2] = { "10", "b" };
+      string symbols[2] = { "a", "b" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
     }
 
     {
       string lower[2] = { "1", "2" };
       string upper[2] = { "10", "a" };
       string symbols[1] = { "a" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1 ) ) );
-    }
-
-    // Two symbols
-    {
-      string lower[2] = { "a", "b" };
-      string upper[2] = { "10", "11" };
-      string symbols[2] = { "a", "b" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
-    }
-
-    {
-      string lower[2] = { "a", "2" };
-      string upper[2] = { "b", "11" };
-      string symbols[2] = { "a", "b" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
-    }
-
-    {
-      string lower[2] = { "1", "2" };
-      string upper[2] = { "a", "b" };
-      string symbols[2] = { "a", "b" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
-    }
-
-    {
-      string lower[2] = { "a", "2" };
-      string upper[2] = { "10", "b" };
-      string symbols[2] = { "a", "b" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
-    }
-
-    {
-      string lower[2] = { "1", "b" };
-      string upper[2] = { "a", "11" };
-      string symbols[2] = { "a", "b" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
-    }
-
-
-    // Three symbols
-    {
-      string lower[2] = { "a", "b" };
-      string upper[2] = { "10", "c" };
-      string symbols[3] = { "a", "b", "c" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
-    }
-
-    {
-      string lower[2] = { "a", "b" };
-      string upper[2] = { "c", "11" };
-      string symbols[3] = { "a", "b", "c" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
-    }
-
-    {
-      string lower[2] = { "a", "2" };
-      string upper[2] = { "b", "c" };
-      string symbols[3] = { "a", "b", "c" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
-    }
-
-    {
-      string lower[2] = { "1", "a" };
-      string upper[2] = { "b", "c" };
-      string symbols[3] = { "a", "b", "c" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 3 ) ) );
-    }
-    // Four symbols
-    {
-      string lower[2] = { "a", "b" };
-      string upper[2] = { "c", "d" };
-      string symbols[4] = { "a", "b", "c", "d" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 4 ) ) );
-    }
-
-    // No symbols
-    {
-      string lower[2] = { "1", "2" };
-      string upper[2] = { "10", "11" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1) ) );
     }
     // */
 
-    /*
-    {
-      string lower[2] = { "1", "2" };
-      string upper[2] = { "10", "20" };
-      //string symbols[2] = { "lb1", "ub1" };
-      //chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
-    }
-
-    {
-      string lower[2] = { "3", "4" };
-      string upper[2] = { "11", "21" };
-      //string symbols[2] = { "lb1", "ub1" };
-      //chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
-    }
-    // */
     // Create an ordered list of Transformations
-    vector<Transformation*> schedulers;
+    vector<Transformation*> transformations;
 
-    // Create an ordered list of loops to fuse
-    // In this case we are fusing loops 0 and 1.
-    // This will result in both loop bodies residing in a single loop, however
-    // the body of loop 0 will come before the body of loop 1
-    //vector<LoopChain::size_type> fuse_these;
-    //fuse_these.push_back( (LoopChain::size_type) 0 );
-    //fuse_these.push_back( (LoopChain::size_type) 1 );
-
-    // Create a FusionTransformation object, passing it the list of loops to fuse
-    //schedulers.push_back( new FusionTransformation( fuse_these ) );
-
-    // Create schedule from loop cahin
+        // Create schedule from loop cahin
     schedule = new Schedule( chain );
-    // Apply transformation
-    schedule->apply( schedulers );
+    // Apply transformations
+    schedule->apply( transformations );
 
     // print domains and Transformations
     cout << *schedule << endl;
@@ -276,15 +157,14 @@ int main( int argc, char** argv ){
 
     // Append rendered ast to the main() body
     if( verbose ) cout << "Inserting into main()" << endl;
-    target_defn->append_statement( body_stmt );
-    //fixStatement ( target_defn );
+    appendStatement( body_stmt, target_defn );
+
+    if( verbose ) cout << "Unparsing" << endl;
+    project->unparse();
 
     // Write AST to dot file
     if( verbose ) cout << "Writing to dot file" << endl;
     generateDOT( *project );
-
-    if( verbose ) cout << "Unparsing" << endl;
-    project->unparse();
 
     // Print generated code
     cout << "Generated Code:" << endl;

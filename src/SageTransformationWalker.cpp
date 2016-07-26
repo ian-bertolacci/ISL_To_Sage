@@ -36,15 +36,13 @@ SageTransformationWalker::SageTransformationWalker( Schedule* schedule, bool ver
 
   for( auto symbol = symbols.begin(); symbol != symbols.end(); ++symbol ){
     SgVariableDeclaration* var_decl = buildVariableDeclaration( *symbol, buildIntType(), NULL, this->scope_stack.top() );
-    wrapping_block->append_statement( var_decl );
-    var_decl->set_parent( wrapping_block );
+    appendStatement( var_decl, wrapping_block );
   }
 
   SgStatement* result = isSgStatement( this->visit( this->isl_root ) );
   assert( result != NULL );
 
-  wrapping_block->append_statement( result );
-  result->set_parent( wrapping_block );
+  appendStatement( result, wrapping_block );
 
   this->scope_stack.pop();
   this->scope_stack.pop();
@@ -932,7 +930,9 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   SgForStatement* for_stmt = buildForStatement( initialization, condition, increment, body );
   {
     this->scope_stack.push( for_stmt );
+    this->scope_stack.push( isSgScopeStatement( getLoopBody( for_stmt ) ) );
     SgStatement* sg_stmt = isSgStatement( this->visit( isl_ast_node_for_get_body( node ) ) );
+    this->scope_stack.pop();
     this->scope_stack.pop();
 
     assert( sg_stmt != NULL );
@@ -940,15 +940,13 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
     if( isSgBasicBlock(sg_stmt) ){
       body = isSgBasicBlock( sg_stmt );
     } else {
-      body = isSgBasicBlock( for_stmt->get_loop_body() );
+      body = isSgBasicBlock( getLoopBody( for_stmt ) );
 
       assert( body != NULL );
 
-      body->append_statement( sg_stmt );
-      sg_stmt->set_parent( body );
+      appendStatement( sg_stmt, body );
     }
-    body->set_parent( for_stmt );
-    for_stmt->set_loop_body( body );
+    setLoopBody( for_stmt, body );
   }
 
   this->depth -= 1;
@@ -991,7 +989,7 @@ SgNode* SageTransformationWalker::visit_node_if(isl_ast_node* node){
 SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
   SgBasicBlock* block = buildBasicBlock();
 
-  //this->scope_stack.push( block );
+  this->scope_stack.push( block );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "Block @ "<< static_cast<void*>(block) << endl;
@@ -1003,10 +1001,10 @@ SgNode* SageTransformationWalker::visit_node_block(isl_ast_node* node){
     SgStatement* sg_stmt = isSgStatement( this->visit( node ) );
     assert( sg_stmt != NULL );
 
-    block->append_statement( sg_stmt );
+    appendStatement( sg_stmt, block );
   }
 
-  //this->scope_stack.pop();
+  this->scope_stack.pop();
 
   return block;
 }
