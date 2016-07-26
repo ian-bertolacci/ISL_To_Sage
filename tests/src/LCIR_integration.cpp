@@ -29,8 +29,43 @@ int main( int argc, char** argv ){
     // Create loop chain
     LoopChain chain;
 
-    // Great breaking case
+    /*
+    Great breaking case.
+    Produces errors:
+    1. Segfault when generateDOT
+    2. the following error when unparsing:
+      LCIR_integration: ../../../rose_dev/src/backend/unparser/nameQualificationSupport.C:5081: virtual NameQualificationInheritedAttribute NameQualificationTraversal::evaluateInheritedAttribute(SgNode*, NameQualificationInheritedAttribute): Assertion `initializedName != __null' failed.
+      Aborted
+    */
     //*
+    {
+      string lower[2] = { "1", "a" };
+      string upper[2] = { "10", "b" };
+      string symbols[2] = { "a", "b" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 2 ) ) );
+    }
+
+    {
+      string lower[2] = { "1", "2" };
+      string upper[2] = { "10", "11" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+    }
+    // */
+
+    /* Great alternative breaking case.
+    Produces code:
+    for (int c1 = 1; c1 <= 10; c1 = c1 + 1) {
+      for (int c2 = c2; c2 <= c1; c2 = c2 + 1) {
+        statement_0(a,c2);
+      }
+    }
+    for (int c1 = 1; c1 <= 10; c1 = c1 + 1) {
+      for (int c2 = 2; c2 <= a; c2 = c2 + 1) {
+        statement_1(c1,c2);
+      }
+    }
+    */
+    /*
     {
       string lower[2] = { "1", "a" };
       string upper[2] = { "10", "b" };
@@ -45,6 +80,7 @@ int main( int argc, char** argv ){
       chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1) ) );
     }
     // */
+
 
     /*
     {
