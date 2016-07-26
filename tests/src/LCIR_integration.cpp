@@ -40,8 +40,9 @@ int main( int argc, char** argv ){
 
     {
       string lower[2] = { "1", "2" };
-      string upper[2] = { "10", "11" };
-      chain.append( LoopNest( RectangularDomain( lower, upper, 2 ) ) );
+      string upper[2] = { "10", "a" };
+      string symbols[1] = { "a" };
+      chain.append( LoopNest( RectangularDomain( lower, upper, 2, symbols, 1) ) );
     }
     // */
 
