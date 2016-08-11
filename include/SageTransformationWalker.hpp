@@ -2,7 +2,6 @@
 #define SAGETRANSFORMATIONWALKER_HPP
 
 #include "all_isl.hpp"
-#include "LoopChainIR/Schedule.hpp"
 #include "rose.h"
 #include <list>
 #include <map>
@@ -24,7 +23,6 @@ class SageTransformationWalker{
     int depth;
     bool verbose;
     std::deque<SgScopeStatement*> scope_stack;
-    LoopChainIR::Schedule* schedule;
     isl_ast_node* isl_root;
 
     std::vector<function_call_info*> statement_macros;

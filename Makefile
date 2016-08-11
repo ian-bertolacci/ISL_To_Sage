@@ -78,14 +78,6 @@ $(INITED_FILE): $(THIRD_PARTY)
 	&& make -j$(MAKE_JOBS) \
 	&& make install
 	#
-	# clone and build LoopChainIR
-	unzip $(TP_SRC)/LoopChainIR-isl_ast.zip -d $(TP_BUILD)
-	mv $(TP_BUILD)/LoopChainIR-isl_ast $(TP_BUILD)/LoopChainIR
-	make -C $(TP_BUILD)/LoopChainIR -j$(MAKE_JOBS)
-	cp $(TP_BUILD)/LoopChainIR/lib/*.a $(TP_LIBRARY)/.
-	mkdir $(TP_INCLUDE)/LoopChainIR
-	cp $(TP_BUILD)/LoopChainIR/src/*.hpp $(TP_INCLUDE)/LoopChainIR
-	#
 	touch $(INITED_FILE)
 
 # Cleaning

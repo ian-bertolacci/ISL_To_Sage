@@ -13,7 +13,6 @@
 using namespace std;
 using namespace SageBuilder;
 using namespace SageInterface;
-using namespace LoopChainIR;
 
 function_call_info::function_call_info( SgExprStatement* expr_node, SgName name, vector<SgExpression*>& parameter_expressions ): expr_node(expr_node), name(name), parameter_expressions(parameter_expressions)
 {}
