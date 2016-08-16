@@ -93,5 +93,6 @@ clean-test:
 
 clean: clean-test
 	- rm $(BIN)/*
+	- rm $(LIB)/*
 
 clean-all: clean-third-party clean
