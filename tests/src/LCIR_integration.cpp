@@ -12,10 +12,10 @@
 #include "SageTransformationWalker.hpp"
 #include "PrintNodeWalker.hpp"
 
-#include "LoopChainIR/FusionTransformation.hpp"
-#include "LoopChainIR/ShiftTransformation.hpp"
-#include "LoopChainIR/TileTransformation.hpp"
-#include "LoopChainIR/Transformation.hpp"
+#include "FusionTransformation.hpp"
+#include "ShiftTransformation.hpp"
+#include "TileTransformation.hpp"
+#include "Transformation.hpp"
 
 using namespace std;
 using namespace SageBuilder;
