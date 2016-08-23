@@ -19,24 +19,23 @@ function_call_info::function_call_info( SgExprStatement* expr_node, SgName name,
 
 SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site ): SageTransformationWalker(isl_root, injection_site, false){ }
 
-SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(), injection_site( injection_site ) {
-  SgGlobal* global = getGlobalScope( injection_site );
-
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(), injection_site( injection_site ), global( getGlobalScope(injection_site) ) {
   if( verbose ){
     cout << "Injection site: "<< static_cast<void*>( injection_site ) << endl
-         << "Global: " << static_cast<void*>( global ) << endl;
+         << "Global: " << static_cast<void*>( this->get_global() ) << endl;
   }
 
   // Form the initial scope stack in bottom-up order (in reverse order they will appear on the stack)
   // Start with injection site, as it is inner most
   this->push_bottom( injection_site );
   // As long as we havent already encountered the global scope, push next enclosing scope
-  while( this->bottom() != global ){
+  while( this->bottom() != this->get_global() ){
     this->push_bottom( getEnclosingScope( this->bottom() ) );
     if( verbose ) cout << "Pushing scope " << static_cast<void*>( this->bottom() ) << endl;
   }
 
   assert( this->top() == injection_site );
+  assert( this->bottom() == this->get_global() );
 
   SgStatement* result = isSgStatement( this->visit( this->isl_root ) );
   assert( result != NULL );
@@ -75,6 +74,10 @@ SgScopeStatement* SageTransformationWalker::pop_bottom(){
   SgScopeStatement* ret = this->bottom();
   this->scope_stack.pop_front();
   return ret;
+}
+
+SgScopeStatement* SageTransformationWalker::get_global(){
+  return this->global;
 }
 
 void SageTransformationWalker::push( SgScopeStatement* scope ){
@@ -413,13 +416,6 @@ SgExpression* SageTransformationWalker::visit_op_max(isl_ast_expr* node){
   int last = isl_ast_expr_get_op_n_arg(node)-1;
 
   SgName name( "max" );
-  SgScopeStatement* scope = new SgGlobal();
-
-  if( this->verbose ){
-    cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
-  }
-
-  assert( scope != NULL );
 
   vector<SgExpression*> parameter_expressions;
   SgExpression* head = this->visit_op_operand( node, last );
@@ -431,7 +427,7 @@ SgExpression* SageTransformationWalker::visit_op_max(isl_ast_expr* node){
 
     SgExprListExp* parameters = buildExprListExp( parameter_expressions );
 
-    head = buildFunctionCallExp( name, buildIntType(), parameters, scope );
+    head = buildFunctionCallExp( name, buildIntType(), parameters, this->get_global() );
 
     if( this->verbose ){
       cout << string(this->depth*2, ' ') << "max @ " << static_cast<void*>(head) << endl;
@@ -447,13 +443,6 @@ SgExpression* SageTransformationWalker::visit_op_min(isl_ast_expr* node){
   int last = isl_ast_expr_get_op_n_arg(node)-1;
 
   SgName name( "max" );
-  SgScopeStatement* scope = new SgGlobal();
-
-  if( this->verbose ){
-    cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
-  }
-
-  assert( scope != NULL );
 
   vector<SgExpression*> parameter_expressions;
   SgExpression* head = this->visit_op_operand( node, last );
@@ -465,7 +454,7 @@ SgExpression* SageTransformationWalker::visit_op_min(isl_ast_expr* node){
 
     SgExprListExp* parameters = buildExprListExp( parameter_expressions );
 
-    head = buildFunctionCallExp( name, buildIntType(), parameters, scope );
+    head = buildFunctionCallExp( name, buildIntType(), parameters, this->get_global() );
 
     if( this->verbose ){
       cout << string(this->depth*2, ' ') << "min @ " << static_cast<void*>(head) << endl;
@@ -574,14 +563,7 @@ SgExpression* SageTransformationWalker::visit_op_fdiv_q(isl_ast_expr* node){
   SgExprListExp* parameters = buildExprListExp( parameter_expressions );
 
   // Build call
-  SgScopeStatement* scope = new SgGlobal();
-  if( this->verbose ){
-    cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
-  }
-
-  assert( scope != NULL );
-
-  SgExpression* call = buildFunctionCallExp( name, buildIntType(), parameters, scope );
+  SgExpression* call = buildFunctionCallExp( name, buildIntType(), parameters, this->get_global() );
 
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "fdiv_q @ " << static_cast<void*>(call) << endl;
@@ -778,13 +760,7 @@ SgExprStatement* SageTransformationWalker::visit_op_call(isl_ast_expr* node){
   SgExprListExp* parameters = buildExprListExp( parameter_expressions );
 
   // Build call
-  SgScopeStatement* scope = new SgGlobal();
-  if( this->verbose ){
-    cout << string(this->depth*2, ' ') << "global @ " << static_cast<void*>(scope) << endl;
-  }
-  assert( scope != NULL );
-
-  SgExprStatement* call = buildFunctionCallStmt( name, buildVoidType(), parameters, scope );
+  SgExprStatement* call = buildFunctionCallStmt( name, buildVoidType(), parameters, this->get_global() );
   function_call_info* info = new function_call_info( call, name, parameter_expressions);
   statement_macros.push_back( info );
 

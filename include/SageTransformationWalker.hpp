@@ -27,6 +27,7 @@ class SageTransformationWalker{
 
     std::vector<function_call_info*> statement_macros;
     SgScopeStatement* injection_site;
+    SgGlobal* global;
 
   public:
     SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site );
@@ -43,9 +44,11 @@ class SageTransformationWalker{
     SgScopeStatement* pop();
     SgScopeStatement* pop_top();
     SgScopeStatement* pop_bottom();
+    SgScopeStatement* get_global();
     void push( SgScopeStatement* scope );
     void push_top( SgScopeStatement* scope );
     void push_bottom( SgScopeStatement* scope );
+
 
     // Generic visit switcher methods
     SgNode* visit( isl_ast_node* node );
