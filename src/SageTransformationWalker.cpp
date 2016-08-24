@@ -833,7 +833,10 @@ SgExpression* SageTransformationWalker::visit_op_unknown(isl_ast_expr* node){
 
 SgVarRefExp* SageTransformationWalker::visit_expr_id(isl_ast_expr* node){
   SgName name( isl_id_get_name( isl_ast_expr_get_id(node) ) );
-  SgVarRefExp* var_ref = buildVarRefExp( name, this->top() );
+  SgVariableSymbol* symbol = lookupVariableSymbolInParentScopes( name, this->injection_site ) ;
+
+  SgVarRefExp* var_ref = (symbol != NULL)? buildVarRefExp( symbol ) : buildVarRefExp( name, this->top() ) ;
+
   if( this->verbose ){
     cout << string(this->depth*2, ' ') << "id: " << name.getString() << " @ " << var_ref << endl;
   }
