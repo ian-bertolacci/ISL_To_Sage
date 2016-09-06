@@ -92,6 +92,22 @@ void SageTransformationWalker::push_bottom( SgScopeStatement* scope ){
   this->scope_stack.push_front( scope );
 }
 
+SgVariableSymbol* SageTransformationWalker::get_symbol( std::string symbol_name ){
+  SgVariableSymbol* symbol = this->symbol_maps[symbol_name];
+
+  if( verbose ){
+    std::cout << std::string(this->depth*2, ' ') << "map[" << symbol_name << "] ---> " << static_cast<void*>(symbol) << endl;
+  }
+
+  return symbol;
+}
+
+void SageTransformationWalker::set_symbol( std::string symbol_name, SgVariableSymbol* symbol ){
+  this->symbol_maps[symbol_name] = symbol;
+  if( this->verbose ){
+    std::cout << std::string(this->depth*2, ' ') << "map[" << symbol_name << "] <--- " << static_cast<void*>(this->symbol_maps[symbol_name]) << endl;
+  }
+}
 
 vector<function_call_info*>* SageTransformationWalker::getStatementMacroNodes(){
   return &(this->statement_macros);
@@ -833,11 +849,20 @@ SgExpression* SageTransformationWalker::visit_op_unknown(isl_ast_expr* node){
 
 SgVarRefExp* SageTransformationWalker::visit_expr_id(isl_ast_expr* node){
   SgName name( isl_id_get_name( isl_ast_expr_get_id(node) ) );
-  SgVariableSymbol* symbol = lookupVariableSymbolInParentScopes( name, this->injection_site ) ;
+  SgVariableSymbol* symbol = get_symbol( name.getString() );
 
-  SgVarRefExp* var_ref = (symbol != NULL)? buildVarRefExp( symbol ) : buildVarRefExp( name, this->top() ) ;
+  // Get symbol from parent scope
+  if( symbol == NULL ){
+    symbol = lookupVariableSymbolInParentScopes( name, this->injection_site ) ;
+    assert( symbol != NULL );
+    this->set_symbol( name.getString(), symbol );
+  }
+
+  SgVarRefExp* var_ref = buildVarRefExp( symbol );
 
   if( this->verbose ){
+    cout << string((this->depth+1)*2, ' ') << "var symbol @ " << static_cast<void*>(symbol) << endl;
+    cout << string((this->depth+1)*2, ' ') << "var symbol name: " << symbol->get_name().getString() << endl;
     cout << string(this->depth*2, ' ') << "id: " << name.getString() << " @ " << var_ref << endl;
   }
 
@@ -897,11 +922,16 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
     SgAssignInitializer* initalizer = buildAssignInitializer( init_exp, buildIntType() );
     SgVariableDeclaration* var_decl = buildVariableDeclaration( *name, buildIntType(), initalizer, this->top() );
 
+    SgVariableSymbol* symbol = SageInterface::getFirstVarSym(var_decl);
+    this->set_symbol( isl_name,  symbol );
+
     // Building the variable decl seems sufficient.
     initialization = var_decl;
     if( this->verbose ){
       cout << string((this->depth+2)*2, ' ') << "initalizer @ " << static_cast<void*>(initalizer) << endl;
       cout << string((this->depth+1)*2, ' ') << "var_decl: " << name->getString() << " @ " << static_cast<void*>(var_decl) << endl;
+      cout << string((this->depth+2)*2, ' ') << "var symbol @ " << static_cast<void*>(symbol) << endl;
+      cout << string((this->depth+2)*2, ' ') << "var symbol name: " << symbol->get_name().getString() << endl;
       cout << string(this->depth*2, ' ') << "init @ " << static_cast<void*>(initialization) << endl;
     }
   }

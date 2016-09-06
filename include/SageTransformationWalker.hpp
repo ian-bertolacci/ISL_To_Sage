@@ -20,6 +20,8 @@ class SageTransformationWalker{
   protected:
     const bool VISIT_TO_NODE_NOT_IMPLEMENTED = false;
 
+    std::map<std::string,SgVariableSymbol*> symbol_maps;
+
     int depth;
     bool verbose;
     std::deque<SgScopeStatement*> scope_stack;
@@ -48,6 +50,10 @@ class SageTransformationWalker{
     void push( SgScopeStatement* scope );
     void push_top( SgScopeStatement* scope );
     void push_bottom( SgScopeStatement* scope );
+
+    // Symbol map manipulators
+    SgVariableSymbol* get_symbol( std::string symbol_name );
+    void set_symbol( std::string symbol_name, SgVariableSymbol* symbol );
 
 
     // Generic visit switcher methods
