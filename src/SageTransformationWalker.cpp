@@ -458,7 +458,7 @@ SgExpression* SageTransformationWalker::visit_op_min(isl_ast_expr* node){
 
   int last = isl_ast_expr_get_op_n_arg(node)-1;
 
-  SgName name( "max" );
+  SgName name( "min" );
 
   vector<SgExpression*> parameter_expressions;
   SgExpression* head = this->visit_op_operand( node, last );
