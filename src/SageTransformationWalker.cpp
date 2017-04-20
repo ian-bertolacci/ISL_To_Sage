@@ -910,7 +910,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
   SgName* name = NULL;
   {
     // Get iterator symbol
-    string isl_name = this->isl_id_prefix + string( isl_id_get_name( isl_ast_expr_get_id( isl_ast_node_for_get_iterator(node) ) ) );
+    string isl_name = string( isl_id_get_name( isl_ast_expr_get_id( isl_ast_node_for_get_iterator(node) ) ) );
     name = new SgName( isl_name );
 
     // Get initialization expression
