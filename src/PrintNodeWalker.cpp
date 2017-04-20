@@ -8,7 +8,9 @@
 
 using namespace std;
 
-PrintNodeWalker::PrintNodeWalker(): depth(-1){}
+PrintNodeWalker::PrintNodeWalker()
+: depth(-1), isl_id_prefix( "isl_id_" )
+{}
 
 string PrintNodeWalker::getTab(){
   return string(this->depth*2, ' ');
@@ -464,7 +466,7 @@ string PrintNodeWalker::visit_expr_error(isl_ast_expr* node){
 string PrintNodeWalker::visit_expr_id(isl_ast_expr* node){
   this->depth += 1;
   isl_id* isl_ident = isl_ast_expr_get_id(node);
-  string result = this->getTab() + string( "Expression id: " ) + string( isl_id_get_name( isl_ident ) ) + string("\n");
+  string result = this->getTab() + string( "Expression id: " ) + this->isl_id_prefix + string( isl_id_get_name( isl_ident ) ) + string("\n");
   this->depth -= 1;
   return result;
 }
