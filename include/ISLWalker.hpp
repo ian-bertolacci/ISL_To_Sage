@@ -10,11 +10,8 @@ class ISLWalker {
     int depth;
 
   public:
-    const std::string isl_id_prefix;
 
     ISLWalker();
-
-    ISLWalker( std::string isl_prefix );
 
     // Generic visit switcher methods
     T visit( isl_ast_expr* node );

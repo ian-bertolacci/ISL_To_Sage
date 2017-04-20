@@ -17,14 +17,9 @@ using namespace SageInterface;
 function_call_info::function_call_info( SgExprStatement* expr_node, SgName name, vector<SgExpression*>& parameter_expressions ): expr_node(expr_node), name(name), parameter_expressions(parameter_expressions)
 {}
 
-SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site )
-: SageTransformationWalker(isl_root, injection_site, false, "isl_id_"){ }
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site ): SageTransformationWalker(isl_root, injection_site, false){ }
 
-SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose, std::string prefix )
-: isl_id_prefix( prefix ),
-  depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(),
-  injection_site( injection_site ), global( getGlobalScope(injection_site) )
-{
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose ): depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(), injection_site( injection_site ), global( getGlobalScope(injection_site) ) {
   if( verbose ){
     cout << "Injection site: "<< static_cast<void*>( injection_site ) << endl
          << "Global: " << static_cast<void*>( this->get_global() ) << endl;
@@ -853,7 +848,7 @@ SgExpression* SageTransformationWalker::visit_op_unknown(isl_ast_expr* node){
 
 
 SgVarRefExp* SageTransformationWalker::visit_expr_id(isl_ast_expr* node){
-  SgName name( this->isl_id_prefix + string( isl_id_get_name( isl_ast_expr_get_id(node) ) ) );
+  SgName name( isl_id_get_name( isl_ast_expr_get_id(node) ) );
   SgVariableSymbol* symbol = get_symbol( name.getString() );
 
   // Get symbol from parent scope
