@@ -35,7 +35,7 @@ class SageTransformationWalker{
     const std::string isl_id_prefix;
 
     SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site );
-    SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose, std::string prefix );
+    SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose, std::string prefix = "isl_id_"  );
 
     std::vector<function_call_info*>* getStatementMacroNodes();
     SgScopeStatement* getInjectionRoot();
