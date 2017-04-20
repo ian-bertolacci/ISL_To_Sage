@@ -12,6 +12,8 @@ class PrintNodeWalker{
     std::string getTab();
 
   public:
+    const std::string isl_id_prefix;
+
     PrintNodeWalker();
 
     // Generic visit switcher methods
