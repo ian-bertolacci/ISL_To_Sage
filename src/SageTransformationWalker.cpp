@@ -20,7 +20,7 @@ function_call_info::function_call_info( SgExprStatement* expr_node, SgName name,
 SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site )
 : SageTransformationWalker(isl_root, injection_site, false, "isl_id_"){ }
 
-SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose, std::string prefix )
+SageTransformationWalker::SageTransformationWalker( isl_ast_node* isl_root, SgScopeStatement* injection_site, bool verbose, std::string prefix = "isl_id_" )
 : isl_id_prefix( prefix ),
   depth( -1 ), verbose( verbose ), scope_stack(), isl_root( isl_root ), statement_macros(),
   injection_site( injection_site ), global( getGlobalScope(injection_site) )
