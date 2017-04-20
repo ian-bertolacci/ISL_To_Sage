@@ -966,7 +966,7 @@ SgNode* SageTransformationWalker::visit_node_for(isl_ast_node* node){
     }
 
     // Create increment expression: iterator = iterator + (increment_exp)
-    increment = buildBinaryExpression<SgAssignOp>( copyExpression(var_ref), buildBinaryExpression<SgAddOp>( var_ref, increment_exp ) );
+    increment = buildBinaryExpression<SgAssignOp>( var_ref, buildBinaryExpression<SgAddOp>( var_ref, increment_exp ) );
 
     if( this->verbose ){
       cout << string(this->depth*2, ' ') << "increment @ " << static_cast<void*>(increment) << endl;
